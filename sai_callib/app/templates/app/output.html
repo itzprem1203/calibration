@@ -1320,46 +1320,9 @@ console.log(tableData);
 }
 
 async function savePdfToDatedFolder(sourceElement, opt, certificateNo) {
-    // Default behavior: reliable browser download (goes to system default download location).
-    const directDownload = () => html2pdf().from(sourceElement).set(opt).save();
-
-    // If folder picker API is not available, always use direct download.
-    if (!("showDirectoryPicker" in window)) {
-        directDownload();
-        return;
-    }
-
-    try {
-        const today = new Date();
-        const yyyy = today.getFullYear();
-        const mm = String(today.getMonth() + 1).padStart(2, "0");
-        const dd = String(today.getDate()).padStart(2, "0");
-        const folderName = `${yyyy}-${mm}-${dd}`;
-
-        // Let user choose any accessible parent folder; avoid forcing protected locations.
-        const rootHandle = await window.showDirectoryPicker({ mode: "readwrite" });
-        const dateFolderHandle = await rootHandle.getDirectoryHandle(folderName, { create: true });
-        const fileName = `${certificateNo || "default-filename"}.pdf`;
-        const fileHandle = await dateFolderHandle.getFileHandle(fileName, { create: true });
-
-        const pdfBlob = await html2pdf()
-            .from(sourceElement)
-            .set(opt)
-            .toPdf()
-            .get('pdf')
-            .then((pdf) => pdf.output('blob'));
-
-        const writable = await fileHandle.createWritable();
-        await writable.write(pdfBlob);
-        await writable.close();
-
-        showNotification(`Saved in ${folderName} folder`, true);
-    } catch (err) {
-        // On Windows/system-folder restrictions or permission cancel, still download normally.
-        console.warn("Folder save failed, using direct download:", err);
-        directDownload();
-        showNotification("Folder access blocked/cancelled. Downloaded using default browser location.", true);
-    }
+    // Always use browser default download behavior (typically Downloads folder).
+    html2pdf().from(sourceElement).set(opt).save();
+    showNotification("PDF downloaded to your browser default location.", true);
 }
 
 /* Direct print with correct settings - global scope for button onclick */
