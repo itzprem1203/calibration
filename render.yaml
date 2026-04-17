@@ -4,8 +4,8 @@ services:
     env: python
     plan: free
     rootDir: sai_callib
-    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
-    startCommand: gunicorn sai_calibrations.wsgi:application
+    buildCommand: pip install -r requirements.txt
+    startCommand: bash start.sh
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9

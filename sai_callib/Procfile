@@ -1,1 +1,1 @@
-web: gunicorn sai_calibrations.wsgi:application
+web: bash start.sh
