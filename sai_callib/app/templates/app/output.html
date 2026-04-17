@@ -5,9 +5,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
-
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <title>A4 Sheet</title>
     <style>
+:root {
+    /* Calibrated for physical print so measured top gap is ~60mm */
+    --header-space: 67mm;
+    --footer-space: -2mm;
+}
 
 #a4-content,#a4-content1 {
     margin: 0;
@@ -26,7 +31,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: flex-start; /* Aligns items to the top */
-    height: 150vh;
+    min-height: 100vh;
     background-color: #f0f0f0;
 }
 
@@ -37,84 +42,159 @@ body {
 }
 
 .a4-sheet {
-    width: 198mm; /* A4 width */
-    height: 285mm; /* A4 height */
-    border: 2px solid #339b8a; /* Border width and color */
-    background-color: white; /* Background color */
-    padding: 20px; /* Padding inside the sheet */
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Optional: shadow effect */
+    width: 210mm; /* True A4 width */
+    height: 297mm; /* True A4 height */
+	/* Page background handled by absolutely positioned image for reliable printing */
+	background-color: white;
+	border: none; /* side borders are drawn only from data-start area */
+	padding: 0 8px 24mm 8px; /* keep central data area usable */
+	box-shadow: none; /* Avoid additional shadow in the exported PDF */
     margin-top: 20px; /* Top margin for spacing */
     position: relative; /* Set position relative for absolute children */
+    box-sizing: border-box;
 }
 
+/* Keep only left and right page border lines with identical geometry */
+.a4-sheet::before,
+.a4-sheet::after {
+    content: "";
+    position: absolute;
+    top: var(--header-space);
+    bottom: var(--footer-space);
+    width: 1px;
+    background: #000;
+    z-index: 3;
+    pointer-events: none;
+    display: block !important;
+}
+.a4-sheet::before {
+    left: 0;
+}
+.a4-sheet::after {
+    right: 0;
+}
+
+/* Pre-printed letterhead space in blank sheet */
+.preprinted-header-space {
+    height: var(--header-space);
+}
+
+/* No page-spanning background; keep original layout/alignment */
+
+/* Print configuration */
+@page {
+	size: A4 portrait;
+	margin: 0;
+}
+
+@media print {
+	body {
+		-webkit-print-color-adjust: exact;
+		print-color-adjust: exact;
+		height: auto !important;
+		min-height: 0 !important;
+		overflow: hidden;
+		background: white;
+	}
+	.a4-container {
+		display: block;
+	}
+	.no-print {
+		display: none !important;
+	}
+	.a4-sheet {
+		width: 210mm !important;
+		height: 297mm !important;
+		min-height: 297mm !important;
+		margin-top: 0;
+		page-break-after: always;
+		overflow: hidden;
+	}
+	.a4-sheet:last-child {
+		page-break-after: auto; /* avoid extra blank last page */
+	}
+	/* Prevent table/footer split across pages */
+	.container-7,
+	.container-8,
+	.container-8-1,
+	.ring_plug_table,
+	.probe_table,
+	.ring_plug_table tr,
+	.probe_table tr {
+		break-inside: avoid;
+		page-break-inside: avoid;
+	}
+	/* Print-only fit tuning so table-2 row/col 3 stays visible */
+	.container-7 {
+		padding-top: 1px !important;
+		padding-bottom: 0 !important;
+	}
+	.container-7 th,
+	.container-7 td {
+		font-size: 12px !important;
+		line-height: 1.05 !important;
+		padding-top: 0 !important;
+		padding-bottom: 0 !important;
+	}
+	/* Slightly lower footer in print only to free space for table row 3 */
+	.container-8,
+	.container-8-1 {
+		bottom: var(--footer-space) !important;
+	}
+}
         #line1 {
             position: absolute;
-            top: 4.2cm; /* Position the line 5.2 cm from the top */
-            left: 50%; /* Position the line in the center */
-            transform: translateX(-50%); /* Center the line */
-            width: 100%; /* Line width */
-            height: 1px; /* Line thickness */
-            background-color: #000; /* Line color */
+            top: var(--header-space);
+            left: 0;
+            transform: none;
+            width: 100%;
+            height: 1px;
+            background-color: #000;
         }
         #line2 {
             position: absolute;
-            top: 7.6cm; /* Position the line 5.2 cm from the top */
-            left: 50%; /* Position the line in the center */
-            transform: translateX(-50%); /* Center the line */
+            top: calc(var(--header-space) + 34mm);
+            left: 0;
+            transform: none;
             width: 100%; /* Line width */
             height: 1px; /* Line thickness */
             background-color: #000; /* Line color */
         }
         #line3 {
             position: absolute;
-            top: 12cm; /* Position the line 5.2 cm from the top */
-            left: 50%; /* Position the line in the center */
-            transform: translateX(-50%); /* Center the line */
+            top: calc(var(--header-space) + 78mm);
+            left: 0;
+            transform: none;
             width: 100%; /* Line width */
             height: 1px; /* Line thickness */
             background-color: #000; /* Line color */
         }
         #line4 {
             position: absolute;
-            top: 16cm; /* Position the line 5.2 cm from the top */
-            left: 50%; /* Position the line in the center */
-            transform: translateX(-50%); /* Center the line */
+            top: calc(var(--header-space) + 123mm);
+            left: 0;
+            transform: none;
             width: 100%; /* Line width */
             height: 1px; /* Line thickness */
             background-color: #000; /* Line color */
         }
 
         #line5 {
-            position: absolute;
-            top: 21.4cm; /* Position the line 5.2 cm from the top */
-            left: 50%; /* Position the line in the center */
-            transform: translateX(-50%); /* Center the line */
-            width: 100%; /* Line width */
-            height: 1px; /* Line thickness */
-            background-color: #000; /* Line color */
+            display: none; /* replaced with section borders for stable alignment */
         }
         #line6 {
-            position: absolute;
-            top: 26cm; /* Position the line 5.2 cm from the top */
-            left: 50%; /* Position the line in the center */
-            transform: translateX(-50%); /* Center the line */
-            width: 100%; /* Line width */
-            height: 1px; /* Line thickness */
-            background-color: #000; /* Line color */
+            display: none; /* replaced with section borders for stable alignment */
         }
          #line7 {
-            position: absolute;
-            top: 27cm; /* Position the line 5.2 cm from the top */
-            left: 50%; /* Position the line in the center */
-            transform: translateX(-50%); /* Center the line */
-            width: 100%; /* Line width */
-            height: 1px; /* Line thickness */
-            background-color: #000; /* Line color */
+            display: none; /* replaced with section borders for stable alignment */
         }
 
         .status-line {
-  text-align: center;
-margin-top: -35px;
+text-align: center;
+margin-top: 3px; /* move status block slightly down from table */
+padding: 1px 0;
+border-top: 1px solid #000;
+border-bottom: 1px solid #000;
 }
 .status-line label {
   font-weight: bold;
@@ -160,7 +240,7 @@ margin-top: -35px;
 
         .vertical-line {
             position: absolute;
-            top: 4.2cm;
+            top: var(--header-space);
             bottom: 0;
             left: 47%;
             height: 7.8cm;
@@ -265,62 +345,107 @@ label::after {
             background-color: white;
         }
         .container-5{
-           height: 170px;
+           height: auto;
+           min-height: 168px; /* free more space for table-2 rows */
           
            margin-top: 8px;
-            width: 768px;
+            width: 100%;
             background-color: white;
+            padding-bottom: 4px;
+        }
+        /* Keep uncertainty text + value on one line */
+        #uncertainity_op {
+            width: calc(100% - 260px) !important;
+            white-space: nowrap;
         }
         .container-6{
-           height: 195px;
-           margin-top: -15px;
-            width: 768px;
+           height: auto; /* remove fixed gap before result table */
+           margin-top: 3px; /* keep heading below divider line */
+            width: 100%;
             background-color: white;
         }
         .container-7{
-           height: 190px;
-           margin-top: 5px;
-            width: 768px;
+           height: auto;
+           margin-top: 0;
+            width: 100%;
             background-color: white;
+            border-top: 1px solid #000; /* line after table-1 block */
+            padding-top: 2px;
+            padding-bottom: 1mm; /* keep a little gap before fixed footer block */
            
+        }
+        .container-7 table {
+            table-layout: fixed;
         }
 
         .container-8{
-           height: 87px;
-            width: 768px;
+           height: auto;
+            width: auto;
             background-color: white;
-            margin-top: 20px;
+            margin-top: 0;
+            border-top: 1px solid #000;
+            position: absolute;
+            left: 6px;
+            right: 6px;
+            bottom: var(--footer-space); /* fixed 12mm from page bottom */
+            z-index: 2;
         }
         .container-8-1{
-           height: 87px;
-            width: 768px;
+           height: auto;
+            width: auto;
             background-color: white;
-            margin-top: 20px;
+            margin-top: 0;
+            border-top: 1px solid #000;
+            position: absolute;
+            left: 6px;
+            right: 6px;
+            bottom: var(--footer-space); /* fixed 12mm from page bottom */
+            z-index: 2;
         }
 
         .container8_sub1{
-            height: 50px;
+            height: 26px;
             width: 200px;
             background-color: white;
             
         }
         .container8_sub2{
             margin-left: 74%;
-            margin-top: -50px;
-            height: 50px;
+            margin-top: -26px;
+            height: 26px;
             width: 200px;
             background-color: white;
           
         }
 
+        /* Slightly lower end certificate text/signatures */
+        .container-8 > header,
+        .container-8-1 > header,
+        .container-8 .container8_sub1,
+        .container-8 .container8_sub2,
+        .container-8-1 .container8_sub1,
+        .container-8-1 .container8_sub2 {
+            position: relative;
+            top: 0;
+        }
+
+        .page-no {
+            text-align: center;
+            margin: 1px 0 0 0;
+            font-size: 12px;
+            line-height: 1;
+        }
+
         footer {
-        border-top: 5px solid #339b8a;
-        height: 50px;
-        width: 100vw;
+        border-top: none;
+        border-bottom: none; /* end line moved to scale-footer for reliable print */
+        height: 18px;
+        width: 100%;
         text-align: center;
-        margin: 0 auto;
-        font-size: 12px;
-        color: #339b8a;
+        margin: 0;
+        box-sizing: border-box;
+        position: relative;
+        display: block !important;
     }
 
     .button-container {
@@ -338,6 +463,26 @@ th, td {
     padding: 0px;
     margin: 0;
     text-align: center;
+}
+
+/* Ensure tables stay within left/right borders */
+.a4-sheet table {
+    width: 100% !important;
+}
+
+/* Move the ruler scale a little lower */
+.scale-footer {
+    display: block !important; /* bring back scale measurement line */
+    width: 100% !important;
+    margin-top: 0 !important;
+    border-bottom: 2px solid #000; /* dark end line under scale */
+    box-sizing: border-box;
+}
+
+/* Ensure footer ruler spans exactly between page borders */
+.a4-sheet footer {
+    width: 100% !important;
+    margin-left: 0 !important;
 }
 
 #notification {
@@ -371,17 +516,8 @@ th, td {
     <div id="notification"></div>
     <div class="a4-container">
         
-        <div class="a4-sheet" id="a4-content">
-        <img id="sai_image" src="{% static 'images/sai.jpg' %}" alt="SAI Accurate Instruments">
-    
-        <div class="header"><strong>SAI ACCURATE INSTRUMENTS</strong></div>
-        <div class="subheader">(An Array Of Metrology Products)</div>
-        
-        <div class="contact-info">
-            <p>54 GVT COMPLEX, NAZARATHPET, CHENNAI-600123<br>
-            E-Mail: saiaccurate@gmail.com | www.saiaccurate.com<br>
-            PH: 9344438999 / 97 87 37 5999</p>
-        </div>
+		<div class="a4-sheet" id="a4-content">
+        <div class="preprinted-header-space"></div>
 
         <div class="line" id="line1"></div> 
         <div class="vertical-line"></div>
@@ -390,7 +526,7 @@ th, td {
              <div class="container1_subheader1">Calibration Certificate Of <br>LVDT Display Unit</div> -->
 
              <div class="container1_subheader1 dro_header">
-  Calibration Certificate Of <br> Electronic Air Gauge Unit <br>(DRO Type)
+  Calibration Certificate Of <br> Electronic Air Gauge Unit <br>(DIAL & DRO Type)
 </div>
 
 <div class="container1_subheader1 lvdt_header">
@@ -457,7 +593,7 @@ th, td {
             
             <input type="text" id="work_order_no_op" name="work_order_no_op" style="display: none;"><br>
             <label for="uncertainity_op" style="width: 200px;">Uncertainity Of Measurement</label>
-            <input type="text" id="uncertainity_op" name="uncertainity_op" style="width: 500px;">
+            <input type="text" id="uncertainity_op" name="uncertainity_op">
         </div>
 
         <div class="line" id="line4"></div>
@@ -613,19 +749,20 @@ th, td {
                 <input type="text" class="quality_manager_op" style="width: 150px; margin-left: 25px;">
                 <p style="text-align: center; margin-top: 5px;">Quality Manager</p>
             </div>
-        </div>
-        <p style="margin-top: -5px;margin-left: 49%;">1</p>
-            <footer style="border-top: 5px solid #339b8a; height: 50px; width: 199mm;">
-                <div class="scale-footer" style="margin-top: -23px;"></div>
+            <p class="page-no">1</p>
+            <footer style="height: 50px;">
+                <div class="scale-footer"></div>
                 <!-- The footer content will be generated dynamically -->
             </footer>
+        </div>
         
     </div>
 
 <!-- ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// -->
 
 
-    <div class="a4-sheet" id="a4-content1">
+	<div class="a4-sheet" id="a4-content1">
+        <div class="preprinted-header-space"></div>
         <div class="container-7" style="margin-top: -10px;" id="container-7-2">
             <header style="text-align: center;font-weight: bold; margin-top: 0px;">CALIBRATION RESULT-2</header>
             <div class="subheader" style="font-size: 12px; font-weight: 500;margin-top: 0px;">(All Values are in mm)</div>
@@ -966,7 +1103,7 @@ th, td {
         </div> 
 
         <div class="line" id="line6"></div> 
-        <div class="container-8-1" style="position: absolute; bottom: 5px; left: 0; width: 100%; text-align: center;">
+        <div class="container-8-1" style="text-align: center;">
              <div class="status-line" style="border-bottom: 1px solid black;">
   <label>STATUS:</label>
   <label style="color: green;">
@@ -989,9 +1126,9 @@ th, td {
                 <input type="text" class="quality_manager_op" style="width: 150px; margin-left: 25px;">
                 <p style="text-align: center; margin-top: 5px;">Quality Manager</p>
             </div>
-            <p style="margin-top: -20px;">2</p>
-            <footer style="border-top: 5px solid #339b8a; height: 50px; width: 199mm;margin-top: 20px;">
-                <div class="scale-footer" style="margin-top: -25px;"></div>
+            <p class="page-no">2</p>
+            <footer style="height: 50px;">
+                <div class="scale-footer"></div>
                 <!-- The footer content will be generated dynamically -->
             </footer>
         </div>
@@ -1001,9 +1138,10 @@ th, td {
     
 </div>
 
-<button class="button-container"  onclick="downloadPDF()">Download as PDF</button>
+<button class="button-container no-print"  onclick="downloadPDF()">Download as PDF</button>
+<button class="button-container no-print" style="background-color:#2563eb" onclick="printPage()">Print</button>
  <a href="/calib/">
-            <button type="submit" class="button-container"  id="back_btn">BACK</button>
+			<button type="submit" class="button-container no-print"  id="back_btn">BACK</button>
         </a>
 
 
@@ -1168,9 +1306,9 @@ console.log(tableData);
                 const combinedContainer = document.createElement('div');
                 combinedContainer.appendChild(element1.cloneNode(true));
                 combinedContainer.appendChild(element2.cloneNode(true));
-                html2pdf().from(combinedContainer).set(opt).save();
+                savePdfToDatedFolder(combinedContainer, opt, certificateNo);
             } else if (element1) {
-                html2pdf().from(element1).set(opt).save();
+                savePdfToDatedFolder(element1, opt, certificateNo);
             } else {
                 showNotification('No content found for PDF generation', false);
             }
@@ -1180,6 +1318,97 @@ console.log(tableData);
     })
     .catch(error => console.error("Error:", error));
 }
+
+async function savePdfToDatedFolder(sourceElement, opt, certificateNo) {
+    // Default behavior: reliable browser download (goes to system default download location).
+    const directDownload = () => html2pdf().from(sourceElement).set(opt).save();
+
+    // If folder picker API is not available, always use direct download.
+    if (!("showDirectoryPicker" in window)) {
+        directDownload();
+        return;
+    }
+
+    try {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, "0");
+        const dd = String(today.getDate()).padStart(2, "0");
+        const folderName = `${yyyy}-${mm}-${dd}`;
+
+        // Let user choose any accessible parent folder; avoid forcing protected locations.
+        const rootHandle = await window.showDirectoryPicker({ mode: "readwrite" });
+        const dateFolderHandle = await rootHandle.getDirectoryHandle(folderName, { create: true });
+        const fileName = `${certificateNo || "default-filename"}.pdf`;
+        const fileHandle = await dateFolderHandle.getFileHandle(fileName, { create: true });
+
+        const pdfBlob = await html2pdf()
+            .from(sourceElement)
+            .set(opt)
+            .toPdf()
+            .get('pdf')
+            .then((pdf) => pdf.output('blob'));
+
+        const writable = await fileHandle.createWritable();
+        await writable.write(pdfBlob);
+        await writable.close();
+
+        showNotification(`Saved in ${folderName} folder`, true);
+    } catch (err) {
+        // On Windows/system-folder restrictions or permission cancel, still download normally.
+        console.warn("Folder save failed, using direct download:", err);
+        directDownload();
+        showNotification("Folder access blocked/cancelled. Downloaded using default browser location.", true);
+    }
+}
+
+/* Direct print with correct settings - global scope for button onclick */
+function printPage() {
+	applyPrintPageState();
+	window.print();
+}
+
+function applyPrintPageState() {
+	const secondSheet = document.getElementById('a4-content1');
+	if (secondSheet) {
+		const hasVisibleSecondPageSection = [2, 3, 4, 5, 6].some((idx) => {
+			const section = document.getElementById(`container-7-${idx}`);
+			return section && getComputedStyle(section).display !== 'none';
+		});
+		secondSheet.style.display = hasVisibleSecondPageSection ? '' : 'none';
+	}
+
+	const sheets = Array.from(document.querySelectorAll('.a4-sheet'));
+	const visibleSheets = sheets.filter(
+		(el) => el.style.display !== 'none' && getComputedStyle(el).display !== 'none'
+	);
+
+	// Clear breaks first (important when visibility changes)
+	sheets.forEach((sheet) => {
+		sheet.style.pageBreakAfter = 'auto';
+		sheet.style.breakAfter = 'auto';
+	});
+
+	// Set breaks only between visible pages, never after the last visible page
+	visibleSheets.forEach((sheet, index) => {
+		const isLast = index === visibleSheets.length - 1;
+		sheet.style.pageBreakAfter = isLast ? 'auto' : 'always';
+		sheet.style.breakAfter = isLast ? 'auto' : 'page';
+	});
+}
+
+// Also handle manual Ctrl+P preview path
+window.addEventListener('beforeprint', function () {
+	applyPrintPageState();
+});
+
+window.addEventListener('afterprint', function () {
+	const secondSheet = document.getElementById('a4-content1');
+	if (!secondSheet) return;
+	// Keep UI consistent with selected channel count after print
+	const visibleCount = parseInt((storedFormData && storedFormData.channels) || 0, 10) || 1;
+	secondSheet.style.display = visibleCount === 1 ? 'none' : '';
+});
 
 
 
@@ -1433,13 +1662,17 @@ if (group2SelectionId === "setting_ring_master") {
 }
 
 
-// Get calculatedData from storedFormData
-var calculatedData = storedFormData.calculatedData;
+// Get calculatedData and channels from storedFormData
+var calculatedData = storedFormData.calculatedData || [];
+var channels = parseInt(storedFormData.channels || 0, 10);
 console.log("calculatedData", calculatedData);  // Check the structure of calculatedData
+console.log("channels from formData", channels);
 
-// The number of containers to display based on calculatedData length
-let visibleCount = calculatedData.length;
-console.log("visibleCount", visibleCount);  // Log the visibleCount, which should be 4
+// The number of containers to display:
+// - Prefer the explicit channels value if provided
+// - Fallback to calculatedData length for older data
+let visibleCount = channels > 0 ? channels : calculatedData.length;
+console.log("visibleCount", visibleCount);
 
 // Loop through all containers and adjust visibility
 for (let i = 1; i <= 6; i++) {
@@ -1474,8 +1707,8 @@ if (visibleCount > 1) {
     }
 }
 
-// Loop through calculatedData to populate input and output values in the correct tbody
-calculatedData.forEach((data, index) => {
+// Loop through calculatedData (limited by visibleCount) to populate input and output values
+calculatedData.slice(0, visibleCount).forEach((data, index) => {
     const containerId = `container-7-${index + 1}`;
     const inputValues = data.inputValues;
     const outputValues = data.outputValues;

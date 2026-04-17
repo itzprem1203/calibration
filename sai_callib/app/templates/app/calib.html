@@ -555,6 +555,16 @@ th{
 
 
   document.getElementById('create_btn').addEventListener('click', function(event) {
+    // Clear any previously stored calibration data so a new certificate starts clean
+    try {
+        localStorage.removeItem('formData');
+    } catch (e) {
+        console.warn('Unable to clear stored formData:', e);
+    }
+    // Also clear any calculated data in this session
+    if (typeof calculatedData !== 'undefined') {
+        calculatedData = [];
+    }
     location.reload(); // Refreshes the current page
   });
 
@@ -1168,6 +1178,7 @@ document.getElementById("final_button").addEventListener("click", function(event
     var uncertainity = document.getElementById("uncertainity").value;
     var inward_no = document.getElementById("inward_no").value;
     var work_order = document.getElementById("work_order").value;
+    var channels = document.getElementById("channels").value;
     
 
     // Collect radio button selections from both groups
@@ -1181,7 +1192,7 @@ document.getElementById("final_button").addEventListener("click", function(event
     var formData = {
         date, certificate_num,next_calibration, calib_engineer,date_of_issue, quality_manager, customer_address,
         range, least_count, identification_no, si_no, make, customer_ref, date_calib,
-        date_of_receipt, calib_procedure_no, location, environment, uncertainity,inward_no,work_order,
+        date_of_receipt, calib_procedure_no, location, environment, uncertainity,inward_no,work_order, channels,
         group1Selection, group2Selection, calculatedData // Add the calculated data array
     };
     

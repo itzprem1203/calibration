@@ -183,6 +183,18 @@ body {
   z-index: 20; /* Ensures it stays on top */ 
   outline: 4px solid white;
 }
+#close{
+            width: 50%;
+            background-color: red;
+            text-align: center;
+           margin-bottom: 2%;
+            font-weight: bold;
+            font-size: 2vw;
+            margin-left: 5%;
+            color: white;
+            font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+
+        }
 </style>
 <body>
     
@@ -201,12 +213,25 @@ body {
           <input type="text" id="user_id" placeholder="UserId"/>
           <div class="password-container">
             <input type="password" id="password" placeholder="Password"/>
-            <button type="button" class="toggle-password" onclick="togglePasswordVisibility()">👁</button>
+            <button type="button" class="toggle-password" onclick="togglePasswordVisibility()">👁</button><br>
+
+           
           </div>
+           <button id="close" onclick="closeApp()">LOG OUT</button>
         </div>
+        
     </div>
 
 <script>
+
+
+function closeApp() {
+    window.pywebview.api.shutdown();  // Call the shutdown function
+}
+
+
+
+
    function togglePasswordVisibility() {
     const passwordInput = document.getElementById('password');
     const button = document.querySelector('.toggle-password');

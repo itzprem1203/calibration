@@ -1,9 +1,21 @@
 from datetime import datetime
 import json
+
+from django.db import IntegrityError, transaction
 from django.http import JsonResponse
 from django.shortcuts import render
-from app.models import LVDTprobeMaster, LVDTprobeTrace, SettingPlugMaster, SettingPlugTrace, SettingRingMaster, SettingRingTrace,MainCalibration, CalibrationEquipment, CalibrationResult
 
+from app.models import (
+    LVDTprobeMaster,
+    LVDTprobeTrace,
+    SettingPlugMaster,
+    SettingPlugTrace,
+    SettingRingMaster,
+    SettingRingTrace,
+    MainCalibration,
+    CalibrationEquipment,
+    CalibrationResult,
+)
 
 
 def output(request):
@@ -13,14 +25,15 @@ def output(request):
             data = json.loads(request.body)
             print("Data received from the frontend:", data)
 
-              # Enhanced date conversion function to handle multiple formats
+            # Enhanced date conversion function to handle multiple formats
             def convert_to_date(date_str):
                 for fmt in ("%d-%m-%Y", "%Y-%m-%d"):
                     try:
                         return datetime.strptime(date_str, fmt).date()
                     except (ValueError, TypeError):
                         continue
-                return None  # Return None if the date format is invalid or empty
+                # Return None if the date format is invalid or empty
+                return None
 
             # Extract and convert dates to correct format
             main_calibration_data = {
@@ -47,40 +60,85 @@ def output(request):
                 'quality_manager': data.get('quality_manager', ''),
             }
 
-            # Create and save the main calibration record
-            main_calibration = MainCalibration.objects.create(**main_calibration_data)
-
-            # Save calibration equipment data
-            for equipment in data.get('tableData', []):
-                CalibrationEquipment.objects.create(
-                    main_calibration=main_calibration,
-                    sr_no=equipment.get('sr_no'),
-                    master_name=equipment.get('master_name', ''),
-                    id_no=equipment.get('id_no', ''),
-                    calibration_no=equipment.get('calibration_no', ''),
-                    valid_upto=equipment.get('valid_upto', ''),
-                    traceability=equipment.get('traceability', ''),
+            # Ensure we have a certificate number to use as a key
+            certificate_num = main_calibration_data['certificate_num']
+            if not certificate_num:
+                return JsonResponse(
+                    {
+                        'status': 'error',
+                        'message': 'Certificate number is required to save calibration data.',
+                    },
+                    status=400,
                 )
 
-            # Save calibration results data
-            for result_set in data.get('calibrationOutputTable', []):
-                container_id = result_set.get('containerId')
-                for result in result_set.get('rows', []):
-                    CalibrationResult.objects.create(
+            with transaction.atomic():
+                # Update the existing record if the certificate already exists,
+                # otherwise create a new one. This avoids UNIQUE constraint errors.
+                main_calibration, created = MainCalibration.objects.update_or_create(
+                    certificate_num=certificate_num,
+                    defaults=main_calibration_data,
+                )
+
+                # Clear existing related data for this certificate so we can replace it
+                CalibrationEquipment.objects.filter(
+                    main_calibration=main_calibration
+                ).delete()
+                CalibrationResult.objects.filter(
+                    main_calibration=main_calibration
+                ).delete()
+
+                # Save calibration equipment data
+                for equipment in data.get('tableData', []):
+                    CalibrationEquipment.objects.create(
                         main_calibration=main_calibration,
-                        container_id=container_id,
-                        parameter=result.get('parameter', ''),
-                        ref_size=result.get('ref_size', ''),
-                        nominal=result.get('nominal', ''),
-                        observation_size=result.get('observation_size', ''),
-                        error=result.get('error', ''),
+                        sr_no=int(equipment.get('sr_no') or 0),
+                        master_name=equipment.get('master_name', ''),
+                        id_no=equipment.get('id_no', ''),
+                        calibration_no=equipment.get('calibration_no', ''),
+                        valid_upto=equipment.get('valid_upto', ''),
+                        traceability=equipment.get('traceability', ''),
                     )
 
+                # Save calibration results data
+                for result_set in data.get('calibrationOutputTable', []):
+                    container_id = result_set.get('containerId', '')
+                    for result in result_set.get('rows', []):
+                        CalibrationResult.objects.create(
+                            main_calibration=main_calibration,
+                            container_id=container_id,
+                            parameter=result.get('parameter', ''),
+                            ref_size=result.get('ref_size', ''),
+                            nominal=result.get('nominal', ''),
+                            observation_size=result.get('observation_size', ''),
+                            error=result.get('error', ''),
+                        )
+
             # Send a success response back to the JavaScript
-            return JsonResponse({'status': 'success', 'message': 'Data saved successfully.'})
+            return JsonResponse(
+                {
+                    'status': 'success',
+                    'message': 'Data saved successfully.',
+                    'created': created,
+                }
+            )
 
         except json.JSONDecodeError:
-            return JsonResponse({'status': 'error', 'message': 'Invalid JSON data.'}, status=400)
+            return JsonResponse(
+                {'status': 'error', 'message': 'Invalid JSON data.'},
+                status=400,
+            )
+        except IntegrityError as e:
+            # Handle any remaining database integrity issues gracefully
+            return JsonResponse(
+                {'status': 'error', 'message': str(e)},
+                status=400,
+            )
+        except Exception as e:
+            # Catch-all so the frontend always receives JSON, not an HTML error page
+            return JsonResponse(
+                {'status': 'error', 'message': str(e)},
+                status=500,
+            )
     
     elif request.method == 'GET':
         # Fetch existing values for display in the template
