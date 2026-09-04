@@ -94,21 +94,19 @@ WSGI_APPLICATION = 'sai_calibrations.wsgi.application'
 #     }
 # }
 
+# Single shared database for all website users.
+# On Render, set DATABASE_URL to one free Neon/Supabase Postgres URL.
+_db_url = os.getenv('DATABASE_URL')
+_is_postgres = bool(_db_url and _db_url.startswith(('postgres://', 'postgresql://')))
+_use_neon_pooler = bool(_db_url and '-pooler' in _db_url)
 DATABASES = {
     'default': dj_database_url.config(
-        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
-        conn_max_age=600,
+        default=_db_url or f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        # Neon pooler (PgBouncer) should not reuse long-lived Django connections.
+        conn_max_age=0 if _use_neon_pooler else (600 if _is_postgres else 0),
+        ssl_require=_is_postgres,
     )
 }
-
-# client_db_path = 'Z:/db.sqlite3'
-# if os.path.exists(client_db_path):
-#     DATABASES['client_db'] = {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': client_db_path,
-#     }
-# else:
-#     print("⚠️ Warning: Z: drive not connected. client_db not available.")
 
 
 # Password validation
