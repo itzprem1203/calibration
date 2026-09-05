@@ -845,11 +845,15 @@ function sendDataToServer(formData, formType) {
             formData: formData
         })
     })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
+    .then(async response => {
+        let data = {};
+        try {
+            data = await response.json();
+        } catch (e) {}
+        if (!response.ok || data.status === 'error') {
+            throw new Error(data.message || data.error || ('HTTP ' + response.status));
         }
-        return response.json();
+        return data;
     })
     .then(data => {
         console.log('Success:', data);

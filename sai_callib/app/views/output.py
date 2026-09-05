@@ -4,6 +4,7 @@ import json
 from django.db import IntegrityError, transaction
 from django.http import JsonResponse
 from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
 
 from app.models import (
     LVDTprobeMaster,
@@ -18,6 +19,7 @@ from app.models import (
 )
 
 
+@csrf_exempt
 def output(request):
     if request.method == 'POST':
         try:

@@ -549,11 +549,15 @@ $(document).ready(function() {
         },
         body: JSON.stringify(formData)
     })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
+    .then(async response => {
+        let data = {};
+        try {
+            data = await response.json();
+        } catch (e) {}
+        if (!response.ok || data.error) {
+            throw new Error(data.error || data.message || ('HTTP ' + response.status));
         }
-        return response.json();
+        return data;
     })
     .then(data => {
         console.log('Success:', data);

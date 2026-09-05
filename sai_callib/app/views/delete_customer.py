@@ -1,6 +1,8 @@
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from app.models import Customer  # adjust model name
 
+@csrf_exempt
 def delete_customer(request):
     if request.method == "POST":
         import json

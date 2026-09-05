@@ -2,9 +2,11 @@ import json
 import re
 from django.http import JsonResponse
 from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
 from app.models import Customer, MainCalibration, WorkOrder
 
 
+@csrf_exempt
 def inward(request):
     if request.method == 'POST':
         customer_name = request.POST.get('customer_name')

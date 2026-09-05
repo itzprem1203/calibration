@@ -61,7 +61,7 @@ def customer(request):
             return JsonResponse({'status': 'success', 'message': 'Data saved successfully.'})
 
         except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)})
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
         
     elif request.method == 'GET':
         customer_value = Customer.objects.all()

@@ -2,9 +2,11 @@
 import re
 from django.shortcuts import render
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from app.models import Customer, EngineerManagerDetails, LVDTprobeMaster, MainCalibration, SettingPlugMaster, SettingPlugTrace, SettingRingMaster, SettingRingTrace, WorkOrder, CalibrationEquipment, CalibrationResult
 
 
+@csrf_exempt
 def calib(request):
     if request.method == 'POST':
         customer_name = request.POST.get('customer_name')
