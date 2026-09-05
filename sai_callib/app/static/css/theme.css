@@ -579,12 +579,18 @@ body.sai-login::before {
 
 /* ——— Form page overrides (keep existing IDs) ——— */
 .sai-app #box0,
-.sai-app .box-0 {
-  background: transparent !important;
-  border: none !important;
+.sai-app .box-0,
+.sai-app .box0 {
+  background: rgba(255, 255, 255, 0.96) !important;
+  border: 1px solid var(--sai-line) !important;
+  border-radius: var(--sai-radius) !important;
+  box-shadow: var(--sai-shadow) !important;
   min-height: auto !important;
   height: auto !important;
   width: 100% !important;
+  margin: 0 !important;
+  padding: 1.15rem 1.25rem 1.35rem !important;
+  overflow: auto;
 }
 
 .sai-app #box1,
@@ -595,7 +601,7 @@ body.sai-login::before {
   padding: 0.55rem !important;
   border: 1px solid var(--sai-line) !important;
   border-radius: var(--sai-radius) !important;
-  background: rgba(255, 255, 255, 0.92) !important;
+  background: #fff !important;
   box-shadow: var(--sai-shadow-sm);
   display: flex !important;
   flex-wrap: wrap;
@@ -609,12 +615,14 @@ body.sai-login::before {
 .sai-app .inner-box-3,
 .sai-app .inner-box-4,
 .sai-app label.inner-box-1,
+.sai-app label.inner-box-2,
+.sai-app label.inner-box-3,
 .sai-app label.inner-box-4 {
   height: auto !important;
   width: auto !important;
-  min-width: 160px;
+  min-width: 170px !important;
   margin: 0 !important;
-  padding: 0.7rem 1rem !important;
+  padding: 0.75rem 1.1rem !important;
   border-radius: var(--sai-radius-sm) !important;
   border: 1px solid var(--sai-line) !important;
   background: var(--sai-mist) !important;
@@ -625,10 +633,13 @@ body.sai-login::before {
   display: inline-flex !important;
   align-items: center;
   justify-content: center;
+  text-align: center !important;
   transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
 .sai-app .inner-box-1:hover,
+.sai-app .inner-box-2:hover,
+.sai-app .inner-box-3:hover,
 .sai-app .inner-box-4:hover,
 .sai-app label.inner-box-1:hover,
 .sai-app label.inner-box-4:hover {
@@ -644,8 +655,8 @@ body.sai-login::before {
   padding: 1.25rem !important;
   border: 1px solid var(--sai-line) !important;
   border-radius: var(--sai-radius) !important;
-  background: rgba(255, 255, 255, 0.95) !important;
-  box-shadow: var(--sai-shadow);
+  background: #fff !important;
+  box-shadow: var(--sai-shadow-sm);
 }
 
 .sai-app .item,
@@ -654,34 +665,84 @@ body.sai-login::before {
 .sai-app .item-3,
 .sai-app .item-4 {
   border: none !important;
-  padding: 0.25rem 0 !important;
+  padding: 0.35rem 0 0.75rem !important;
   text-align: left !important;
   background: transparent !important;
 }
 
-.sai-app label {
-  color: var(--sai-slate);
-  font-weight: 650 !important;
-  font-size: 0.86rem;
+/* Restore proper label + input columns like original forms */
+.sai-app #box0 label:not([class*="inner-box"]):not(.sai-skip-label),
+.sai-app #box2 label:not([class*="inner-box"]):not(.sai-skip-label),
+.sai-app .box0 label:not([class*="inner-box"]),
+.sai-app form#customer-form > label,
+.sai-app #heading + * label,
+.sai-app .container_1 label,
+.sai-app .container_2 label,
+.sai-app .container_3 label,
+.sai-app .container_box label,
+.sai-app .label-container label {
+  display: inline-block !important;
+  width: 170px !important;
+  max-width: 170px;
+  margin: 10px 10px 10px 0 !important;
+  padding: 0 !important;
+  text-align: right !important;
+  vertical-align: middle !important;
+  color: var(--sai-slate) !important;
+  font-weight: 700 !important;
+  font-size: 0.86rem !important;
+  line-height: 1.25;
+  white-space: normal;
 }
 
-.sai-app input[type="text"],
-.sai-app input[type="number"],
-.sai-app input[type="date"],
-.sai-app input[type="email"],
-.sai-app input[type="password"],
-.sai-app input:not([type]),
-.sai-app select,
-.sai-app textarea {
+.sai-app #box0 input[type="text"],
+.sai-app #box0 input[type="number"],
+.sai-app #box0 input[type="date"],
+.sai-app #box0 input[type="email"],
+.sai-app #box0 input:not([type]),
+.sai-app #box0 select,
+.sai-app #box2 input[type="text"],
+.sai-app #box2 input[type="number"],
+.sai-app #box2 input[type="date"],
+.sai-app #box2 input[type="email"],
+.sai-app #box2 input:not([type]),
+.sai-app #box2 select,
+.sai-app .box0 input[type="text"],
+.sai-app .box0 input[type="number"],
+.sai-app .box0 input[type="date"],
+.sai-app .box0 input:not([type]),
+.sai-app .box0 select,
+.sai-app .container_1 input,
+.sai-app .container_1 select,
+.sai-app .container_2 input,
+.sai-app .container_2 select,
+.sai-app .container_3 input,
+.sai-app .container_3 select {
+  display: inline-block !important;
+  width: 230px !important;
+  max-width: 100%;
+  vertical-align: middle !important;
+  margin: 8px 14px 8px 0 !important;
   border: 1px solid var(--sai-line) !important;
   border-radius: 6px !important;
-  padding: 0.45rem 0.6rem !important;
+  padding: 0.5rem 0.65rem !important;
   background: #fff !important;
   color: var(--sai-text) !important;
   font-family: var(--font-body) !important;
-  height: auto !important;
-  min-height: 2.1rem;
+  height: 2.35rem !important;
+  min-height: 2.35rem !important;
+  box-sizing: border-box !important;
   transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.sai-app #search-input,
+.sai-app input#search-input {
+  width: min(100%, 420px) !important;
+}
+
+.sai-app #customer_name,
+.sai-app #gst_no {
+  width: 280px !important;
 }
 
 .sai-app input:focus,
@@ -692,21 +753,104 @@ body.sai-login::before {
   box-shadow: 0 0 0 3px var(--sai-teal-soft);
 }
 
+.sai-app textarea,
 .sai-app textarea.ruled-textarea,
-.sai-app #address {
-  width: min(100%, 640px);
-  min-height: 100px;
+.sai-app #address,
+.sai-app #customer_address {
+  display: block !important;
+  width: min(100%, 720px) !important;
+  min-height: 110px !important;
+  height: auto !important;
+  margin: 10px 0 16px !important;
   resize: vertical;
+  border: 1px solid var(--sai-line) !important;
+  border-radius: 6px !important;
+  padding: 0.65rem 0.75rem !important;
+  background: #fff !important;
+  font-family: var(--font-body) !important;
+}
+
+.sai-app .container {
+  display: flex !important;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin: 0.75rem 0 1rem;
+  width: 100%;
+}
+
+.sai-app .container .label-container {
+  flex: 0 0 170px;
+}
+
+.sai-app .container .label-container label {
+  width: 170px !important;
+  margin-top: 0.5rem !important;
+}
+
+.sai-app .container textarea {
+  flex: 1;
+  margin-top: 0 !important;
+}
+
+/* Calibration column blocks */
+.sai-app .container_1,
+.sai-app .container_2,
+.sai-app .container_3 {
+  display: inline-block !important;
+  vertical-align: top !important;
+  width: 32% !important;
+  min-width: 260px;
+  margin: 0.5rem 0.75% 1rem !important;
+  padding: 0.85rem !important;
+  background: var(--sai-paper);
+  border: 1px solid var(--sai-line);
+  border-radius: var(--sai-radius-sm);
+  box-sizing: border-box;
+}
+
+.sai-app .container_1 label,
+.sai-app .container_2 label,
+.sai-app .container_3 label {
+  width: 150px !important;
+  max-width: 150px !important;
+}
+
+.sai-app .container_1 input,
+.sai-app .container_1 select,
+.sai-app .container_2 input,
+.sai-app .container_2 select,
+.sai-app .container_3 input,
+.sai-app .container_3 select {
+  width: calc(100% - 165px) !important;
+  min-width: 120px !important;
+  max-width: 220px !important;
+}
+
+.sai-app #heading,
+.sai-app center#heading {
+  display: block;
+  font-family: var(--font-brand);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--sai-ink);
+  margin: 0.25rem 0 1rem;
+  text-align: center;
+}
+
+.sai-app #btn_div {
+  display: flex;
+  gap: 0.65rem;
+  justify-content: flex-end;
+  margin-bottom: 0.75rem;
 }
 
 .sai-app table {
   width: 100%;
-  border-collapse: separate !important;
-  border-spacing: 0;
-  overflow: hidden;
+  border-collapse: collapse !important;
   border: 1px solid var(--sai-line) !important;
   border-radius: var(--sai-radius-sm);
   background: #fff;
+  margin: 0.75rem 0 1rem;
 }
 
 .sai-app th,
@@ -714,6 +858,7 @@ body.sai-login::before {
   border: 1px solid var(--sai-line) !important;
   padding: 0.55rem 0.45rem !important;
   font-size: 0.88rem;
+  vertical-align: middle;
 }
 
 .sai-app th {
@@ -721,51 +866,121 @@ body.sai-login::before {
   color: var(--sai-ink);
   font-weight: 700;
   letter-spacing: 0.02em;
+  text-align: center;
 }
 
+.sai-app td input.no-outline,
 .sai-app .no-outline {
   border: none !important;
   outline: none !important;
   box-shadow: none !important;
   background: transparent !important;
-  width: 100%;
+  width: 100% !important;
+  height: 2rem !important;
+  min-height: 2rem !important;
+  margin: 0 !important;
+  padding: 0.25rem 0.35rem !important;
 }
 
+/* Action buttons — clear, aligned row */
 .sai-app #save-btn,
-.sai-app button#save-btn,
-.sai-app input#save-btn {
-  background: linear-gradient(135deg, var(--sai-teal), var(--sai-teal-deep)) !important;
-  color: #fff !important;
-  border: none !important;
-  border-radius: var(--sai-radius-sm) !important;
-  padding: 0.55rem 1.1rem !important;
-  font-weight: 700 !important;
-  box-shadow: 0 6px 16px rgba(13, 155, 138, 0.28);
-}
-
+.sai-app #clear-btn,
+.sai-app #delete-btn,
 .sai-app #cancel-btn,
 .sai-app #cancel-btn-2,
 .sai-app #cancel-btn-3,
 .sai-app #cancel-btn-4,
+.sai-app #create_btn,
+.sai-app #print_preview,
+.sai-app #back_btn,
+.sai-app #final_button,
+.sai-app button[id^="ok_button"],
+.sai-app form a #cancel-btn,
+.sai-app button#save-btn,
+.sai-app button#delete-btn {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  min-width: 128px;
+  height: 42px !important;
+  margin: 12px 10px 4px 0 !important;
+  padding: 0 1.15rem !important;
+  border-radius: 8px !important;
+  border: none !important;
+  font-weight: 700 !important;
+  font-size: 0.88rem !important;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  vertical-align: middle;
+  box-shadow: 0 4px 12px rgba(15, 28, 36, 0.12);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.sai-app #save-btn:hover,
+.sai-app #clear-btn:hover,
+.sai-app #delete-btn:hover,
+.sai-app #cancel-btn:hover,
+.sai-app #create_btn:hover,
+.sai-app #print_preview:hover,
+.sai-app #back_btn:hover {
+  transform: translateY(-1px);
+}
+
+.sai-app #save-btn,
+.sai-app #create_btn,
+.sai-app #print_preview,
+.sai-app #final_button,
+.sai-app button[id^="ok_button"] {
+  background: linear-gradient(135deg, var(--sai-teal), var(--sai-teal-deep)) !important;
+  color: #fff !important;
+}
+
 .sai-app #clear-btn,
-.sai-app button[id^="cancel"] {
-  background: var(--sai-mist) !important;
+.sai-app #cancel-btn,
+.sai-app #cancel-btn-2,
+.sai-app #cancel-btn-3,
+.sai-app #cancel-btn-4,
+.sai-app #back_btn {
+  background: #eef2f4 !important;
   color: var(--sai-ink) !important;
   border: 1px solid var(--sai-line) !important;
-  border-radius: var(--sai-radius-sm) !important;
-  padding: 0.55rem 1rem !important;
-  font-weight: 700 !important;
+  box-shadow: none !important;
 }
 
 .sai-app #delete-btn,
-.sai-app #logout_btn,
 .sai-app button#delete-btn {
   background: linear-gradient(135deg, var(--sai-danger), var(--sai-danger-deep)) !important;
   color: #fff !important;
-  border: none !important;
-  border-radius: var(--sai-radius-sm) !important;
+}
+
+.sai-app #logout_btn {
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: #fff !important;
+  border: 1px solid rgba(255, 255, 255, 0.28) !important;
+  border-radius: 8px !important;
   padding: 0.55rem 1rem !important;
   font-weight: 700 !important;
+  min-width: 110px;
+  height: auto !important;
+  box-shadow: none !important;
+}
+
+.sai-app #refresh-btn1,
+.sai-app #refresh-btn2 {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 38px !important;
+  height: 38px !important;
+  min-width: 38px !important;
+  margin: 8px 8px 8px 0 !important;
+  padding: 0 !important;
+  border-radius: 8px !important;
+  border: 1px solid var(--sai-line) !important;
+  background: #fff !important;
+  color: var(--sai-teal-deep) !important;
+  vertical-align: middle;
+  box-shadow: none !important;
 }
 
 .sai-app #notification {
@@ -778,6 +993,31 @@ body.sai-login::before {
 
 .sai-app .selected {
   background: rgba(13, 155, 138, 0.18) !important;
+}
+
+.sai-app form#customer-form,
+.sai-app #engineer_manager_details,
+.sai-app #box2 .item {
+  position: relative;
+}
+
+.sai-app form#customer-form > a,
+.sai-app #engineer_manager_details > div {
+  display: inline;
+}
+
+.sai-app #box2 #cancel-btn,
+.sai-app #box2 #clear-btn,
+.sai-app #box2 #save-btn,
+.sai-app #box2 #delete-btn,
+.sai-app #box2 #cancel-btn-4 {
+  margin-top: 1rem !important;
+}
+
+/* Home: icon tiles only — no duplicate top menu */
+body.page-home .sai-main {
+  width: min(1100px, calc(100% - 2rem));
+  margin-top: 1.5rem;
 }
 
 /* Print / PDF chrome (on-screen only) */
