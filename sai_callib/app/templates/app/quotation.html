@@ -4,14 +4,204 @@
 QUOTATION
 {% endblock title %}
 {% block content %}
-<div class="sai-panel" style="margin-bottom:1rem;">
-  <div class="sai-panel-head">
-    <div>
-      <h1>Quotation</h1>
-      <p>Prepare and manage customer quotations.</p>
-    </div>
-  </div>
-</div>
+<style>
+    #box0{
+        height: 100%;
+        width: 100%;
+        border: 2px solid black;
+        background-color:lightgray;
+        
+    }
+
+    label {
+    display: inline-block;
+    width: 130px;
+    margin-top: 10px;
+    text-align:  right;
+    margin-left: 1px;
+    
+    
+}
+select {
+    margin-top: 10px;
+    box-sizing: border-box;
+    width: 10%;
+    height: 30px;
+    margin-left: 10px;
+}
+
+input{
+    margin-left: 1px;
+    width: 10%;
+}
+#customer_address{
+    height: 50px;
+    width: 400px;
+    margin-left: 30px;
+    margin-top: 10px;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    background-color: rgb(199, 199, 241);
+    
+}
+
+th, td {
+    border: 1px solid black;
+    padding: 8px;
+    text-align: center;
+}
+th{
+    background-color: orange;
+}
+#add_new_btn{
+    margin-left: 40%;
+}
+.container_box{
+    height: 100%;
+    width: 100%;
+    border: 2px solid black;
+    background-color:lightgray;
+}
+#control_btn_div{
+    margin-left: 20%;
+    margin-top: 10px;
+}
+#cancel-btn{
+    height: 40px;
+    width: 130px;
+    background-color:yellow;
+    color: black;
+    text-align: center;
+    font-weight: bold;
+}
+
+#submit-btn{
+    height: 40px;
+    width: 130px;
+    background-color:green;
+    margin-left: 50px;
+    color: white;
+    text-align: center;
+    font-weight: bold;
+}
+#delete-btn{
+    height: 40px;
+    width: 130px;
+    background-color:red;
+    margin-left: 50px;
+    color: white;
+    text-align: center;
+    font-weight: bold;  
+}
+#create_btn{
+    background-color:blue;
+    color: white;
+    font-weight: bold;
+    width: 150px;
+    height: 30px;
+    margin-left: 15%;
+}
+#print_preview{
+    background-color:blue;
+    color: white;
+    font-weight: bold;
+    font-size: small;
+    width: 150px;
+    height: 30px;
+    margin-left: 1%;
+}
+#refresh-btn1,#refresh-btn2 i {
+    font-size: 20px;  /* Adjust size of the icon */
+    color: #007bff;   /* Adjust color if needed */
+}
+
+#refresh-btn1,#refresh-btn2:hover i {
+    color: #0056b3;   /* Hover effect for the icon */
+}
+
+#notification {
+    display: none;
+    position: fixed;    
+    top: 40%;
+    left: 40%;
+    height: 120px;
+    width: 350px;
+    transform: translate(-50%, -50%);
+    padding: 10px;
+    border-radius: 5px;
+    font-weight: bold;
+    color: black;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); 
+    z-index: 1000; 
+    border: 2px solid black;
+}
+.selected-row {
+    background-color: green;
+}
+
+.edit-cell {
+    width: 100%;
+    border: 1px solid #ddd;
+    margin-left: 0px;
+}
+.custom-checkbox {
+            width: 15px;
+            height: 15px;
+            accent-color: red;
+        }
+/* Ensure the checkbox is visually enabled but not interactable */
+.readonly-checkbox {
+    pointer-events: none; /* Disable pointer interaction */
+    opacity: 1; /* Ensure it’s fully visible */
+}
+
+/* Make inputs and selects fill the whole table cell area */
+#tableBody-1 input,
+#tableBody-1 select {
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    border: none;
+    outline: none;
+    padding: 0;
+    margin: 0;
+    background-color: white;
+    font-size: 14px;
+    display: block; /* Ensures full area coverage */
+}
+
+/* Remove space inside table cells */
+#tableBody-1 td {
+    padding: 0;
+    margin: 0;
+    height: 32px; /* optional: you can adjust the cell height */
+    line-height: 1; /* keeps vertical alignment tight */
+}
+
+/* Optional: make the table layout consistent */
+#tableBody-1 {
+    border-collapse: collapse;
+}
+
+
+/* Hover and select on <td> so it appears behind inputs */
+#tableBody-1 tr:hover td {
+    background-color: #e6f2ff !important; /* Light blue hover */
+}
+
+#tableBody-1 tr.selected-row td {
+    border: 2px solid red !important; /* Red border */
+    box-shadow: 0 0 5px 2px rgba(255, 0, 0, 0.7); /* Red glow around cells */
+    
+    transition: all 0.2s ease-in-out;
+}
+
+
+
+</style>
 
 <div id="notification"></div>
 

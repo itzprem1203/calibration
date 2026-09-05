@@ -1,53 +1,224 @@
 {% extends 'app/layouts/main.html' %}
 {% load static %}
-{% block title %}Home | SAI Accurate Instruments{% endblock title %}
-{% block body_class %}page-home{% endblock %}
-{% block chrome %}{% endblock chrome %}
+{% block title %}
+Index Page
+{% endblock title %}
 {% block content %}
-<section class="home-hero">
-  <img id="sai_image" src="{% static 'images/sai.jpg' %}" alt="SAI Accurate Instruments" onerror="this.onerror=null;this.src='{% static 'images/demo.jpg' %}'">
-  <div class="home-hero-copy">
-    <h1>SAI Accurate Instruments</h1>
-    <p class="sub">An array of metrology products · Calibration Certificate Software</p>
-    <p class="contact">
-      54 GVT Complex, Nazarathpet, Chennai-600123<br>
-      E-Mail: saiaccurate@gmail.com | www.saiaccurate.com<br>
-      PH: 9344438999 / 9787375999
-    </p>
+<style>
+
+body {
+  font-family: 'Arial', sans-serif; /* Simple and modern font */
+  background-color: #FAF9F6; /* Ivory background */
+  color: #333; /* Dark text color for good readability */
+  margin: 0;
+  padding: 0;
+}
+/* Container Styles */
+.container1 {
+  height: 200px;
+  width: 100%;
+  background-color: #FF6F61; /* Soft Coral */
+  color: white; /* White text for contrast */
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+.container1_1{
+  margin-top: -70px;
+}
+
+#sai_image {
+  height: 150px;
+  width: 120px;
+  margin-left: 10%; 
+  outline: 5px solid white;
+  outline-offset: 5px;
+  display: block; 
+  margin-top: -170px;
+}
+
+
+.header {
+  font-size: 40px;
+  font-weight: bold;
+  text-align: center;
+  color: white; /* Text color */
+  text-shadow: 
+    -2px -2px 0 #120e0e,  /* Top-left shadow */
+    2px -2px 0 #120e0e,   /* Top-right shadow */
+    -2px 2px 0 #120e0e,   /* Bottom-left shadow */
+    2px 2px 0 #120e0e;    /* Bottom-right shadow */
+}
+
+.subheader {
+  font-size: 25px;
+  text-align: center;
+  font-weight: bold;
+  color:rgb(0, 0, 0);
+  font-family: 'Times New Roman', Times, serif;
+}
+
+.contact-info {
+  font-size:19px;
+  text-align: center;
+}
+#logout_btn{
+  height: 50px;
+  width: 130px;
+  background-color:red;
+  color: white;
+  font-weight: bold;
+  margin-left: 60%;
+  margin-top: 20px;
+ border: 2px solid black;
+}
+.container2 {
+  height: 430px;
+  width: 25%;
+  background-color: #4C9A8F; /* Muted Teal */
+  color: white; /* White text for contrast */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  
+}
+
+
+
+
+
+
+.image-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 columns */
+  gap: 20px; /* Space between images */
+  justify-items: center; /* Center images horizontally */
+}
+
+.image-item {
+  text-align: center;
+}
+
+.image-item img {
+  width: 70px; /* Adjust size of the image */
+  height: 70px; /* Maintain circular shape */
+  border-radius: 50%; /* Make images round */
+  object-fit: cover; /* Ensure image fits in the circle */
+  background-color: white;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  outline: 5px solid white;
+  outline-offset: 5px;
+  margin-top: 40px;
+}
+
+.image-item p {
+  margin-top: 10px;
+  font-size: 15px;
+  font-weight: bold;
+  color: white; /* Text color */
+}
+
+
+
+
+
+.container3 {
+  height: 430px;
+  width: 50%;
+  background-color: #D1C6E1; /* Light Lavender */
+  color: #333; /* Dark text for good readability */
+  padding: 30px;
+  margin-left: 25%;
+  margin-top: -430px;
+ 
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.container4 {
+  height: 430px;
+  width: 25%;
+  background-color: #D3D3D3; /* Light Gray */
+  color: #333; /* Dark text for good readability */
+  padding: 30px;
+  margin-left: 75%;
+  margin-top: -430px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.zoomable {
+  transition: transform 0.3s ease; /* Smooth zoom-out effect */
+}
+
+.zoomable:hover {
+  transform: scale(0.9); /* Zoom out slightly */
+}
+
+</style>
+<div class="container1">
+  
+  <button type="submit" id="logout_btn">Log Out</button>
+  
+  <div class="container1_1">
+    <div class="header">SAI ACCURATE INSTRUMENTS</div>
+    <div class="subheader">(An Array Of Metrology Products)</div>
+    <div class="contact-info">
+      <p>
+        54 GVT COMPLEX, NAZARATHPET, CHENNAI-600123<br>
+        E-Mail: saiaccurate@gmail.com | www.saiaccurate.com<br>
+        PH: 9344438999 / 97 87 37 5999
+      </p>
+    </div>
   </div>
-  <button type="button" class="sai-btn sai-btn-ghost" id="logout_btn">Log Out</button>
-</section>
+  <img id="sai_image" src="{% static 'images/sai.jpg' %}" alt="SAI Accurate Instruments">
 
-<section class="module-grid" aria-label="Application modules">
-  <a class="module-card" href="{% url 'customer' %}">
-    <img src="{% static 'images/people.png' %}" alt="" class="zoomable" onerror="this.style.display='none'">
-    <span>Customer</span>
-  </a>
-  <a class="module-card" href="{% url 'inward' %}">
-    <img src="{% static 'images/inward1.png' %}" alt="" class="zoomable" onerror="this.style.display='none'">
-    <span>Inward</span>
-  </a>
-  <a class="module-card" href="{% url 'calib' %}">
-    <img src="{% static 'images/measurement.png' %}" alt="" class="zoomable" onerror="this.style.display='none'">
-    <span>Calibrations</span>
-  </a>
-  <a class="module-card" href="{% url 'invoice' %}">
-    <img src="{% static 'images/invoice.png' %}" alt="" class="zoomable" onerror="this.style.display='none'">
-    <span>Proforma Invoice</span>
-  </a>
-  <a class="module-card" href="{% url 'report' %}">
-    <img src="{% static 'images/report.png' %}" alt="" class="zoomable" onerror="this.style.display='none'">
-    <span>Report</span>
-  </a>
-  <a class="module-card" href="{% url 'master' %}">
-    <img src="{% static 'images/deadline.png' %}" alt="" class="zoomable" onerror="this.style.display='none'">
-    <span>Master</span>
-  </a>
-</section>
+  
+</div>
 
+<div class="container2">
+  <div class="image-grid">
+    <div class="image-item">
+      <a href="{% url 'customer' %}">
+      <img src="{% static 'images/people.png' %}"  alt="Image 1" class="zoomable">
+      </a>
+      <p>CUSTOMER</p>
+    </div>
+    <div class="image-item">
+      <a href="{% url 'inward' %}">
+      <img src="{% static 'images/inward1.png' %}" alt="Image 2" class="zoomable">
+      </a>
+      <p>INWARD</p>
+    </div>
+    <div class="image-item">
+      <a href="{% url 'calib' %}">
+      <img src="{% static 'images/measurement.png' %}" alt="Image 3" class="zoomable">
+      </a>
+      <p>CALIBRATIONS</p>
+    </div>
+    
+    <div class="image-item">
+      <a href="{% url 'invoice' %}">
+      <img src="{% static 'images/invoice.png' %}" alt="Image 4" class="zoomable">
+      </a>
+      <p>PROFOMA INVOICE</p>
+    </div>
+    <div class="image-item">
+      <a href="{% url 'report' %}">
+      <img src="{% static 'images/report.png' %}"  alt="Image 5" class="zoomable">
+      </a>
+      <p>REPORT</p>
+    </div>
+    <div class="image-item">
+      <a href="{% url 'master' %}">
+      <img src="{% static 'images/deadline.png' %}"  alt="Image 6" class="zoomable">
+      </a>
+      <p>MASTER</p>
+    </div>
+  </div>
+</div>
+
+<div class="container3"></div>
+<div class="container4"></div>
 <script>
-  document.getElementById('logout_btn').addEventListener('click', function () {
+  document.getElementById('logout_btn').addEventListener("click",function(){
     window.location.href = "{% url 'login' %}";
-  });
+  })
 </script>
+
 {% endblock content %}

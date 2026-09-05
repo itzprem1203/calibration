@@ -8,11 +8,7 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-    <title>Report | SAI Accurate</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=Syne:wght@600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    <title>Report Page</title>
     <style>
 
 #a4-content,#a4-content1 {
@@ -30,29 +26,10 @@
 body {
     margin: 0;
     display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
-    min-height: 100vh;
-    background: linear-gradient(165deg, #dce6ea 0%, #f4f7f8 45%, #eef3f5 100%);
-    font-family: "Source Sans 3", sans-serif;
-}
-
-#enter_btn, #back_btn, .button-container {
-    border: none !important;
-    border-radius: 8px !important;
-    padding: 0.55rem 1rem !important;
-    font-weight: 700 !important;
-    background: linear-gradient(135deg, #0d9b8a, #087a6d) !important;
-    color: #fff !important;
-}
-
-#back_btn { background: #1a2e38 !important; }
-
-#search_box {
-    border: 1px solid rgba(15,28,36,0.12) !important;
-    border-radius: 8px !important;
-    padding: 0.55rem 0.75rem !important;
+    justify-content: center;
+    align-items: flex-start; /* Aligns items to the top */
+    height: 150vh;
+    background-color: #f0f0f0;
 }
 
 .a4-container {
@@ -376,13 +353,7 @@ th, td {
 
     </style>
 </head>
-<body class="sai-print-page">
-    <div class="sai-print-chrome no-print">
-      <div class="title">Calibration Report</div>
-      <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
-        <a class="sai-btn sai-btn-ghost" href="/index/">Home</a>
-      </div>
-    </div>
+<body>
    
     <div class="a4-container">
         
