@@ -16,6 +16,10 @@ staticfiles/
 # Environment secrets
 .env
 
+# Local DB export (do not commit customer/calibration data)
+sai_callib/data_export.json
+data_export.json
+
 # Build artifacts
 build/
 dist/

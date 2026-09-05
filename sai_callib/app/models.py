@@ -10,7 +10,7 @@ class Customer(models.Model):
     secondary_email = models.EmailField()
     primary_phone_no = models.CharField(max_length=15)
     secondary_phone_no = models.CharField(max_length=15)
-    gst_no = models.CharField(max_length=15)
+    gst_no = models.CharField(max_length=50)
     primary_dept = models.CharField(max_length=255)
     secondary_dept = models.CharField(max_length=255)
     address = models.TextField()
