@@ -2,36 +2,57 @@
 <!doctype html>
 <html lang="en">
   <head>
-
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="pragma" content="no-cache">
     <meta http-equiv="expires" content="0">
-    
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;550;600;700&family=Syne:wght@600;700;750&display=swap" rel="stylesheet">
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-
-    <title>
-        {% block title %}
-        {% endblock title %}
-     
-    </title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
 
-   
+    <title>{% block title %}SAI Accurate Instruments{% endblock title %}</title>
+    {% block extra_head %}{% endblock extra_head %}
   </head>
-  <body>
-   {% block content %}
-   {% endblock content %}
+  <body class="sai-app {% block body_class %}{% endblock %}">
+    <div class="sai-shell">
+      {% block chrome %}
+      <header class="sai-topbar">
+        <a class="sai-brand" href="{% url 'index' %}">
+          <img src="{% static 'images/sai.jpg' %}" alt="SAI Accurate Instruments" onerror="this.src='{% static 'images/demo.jpg' %}'">
+          <div class="sai-brand-text">
+            <strong>SAI Accurate Instruments</strong>
+            <span>Calibration Certificate Software</span>
+          </div>
+        </a>
+        <nav class="sai-nav" aria-label="Main">
+          <a href="{% url 'customer' %}" class="{% if request.path == '/customer/' %}is-active{% endif %}">Customer</a>
+          <a href="{% url 'inward' %}" class="{% if request.path == '/inward/' %}is-active{% endif %}">Inward</a>
+          <a href="{% url 'calib' %}" class="{% if request.path == '/calib/' %}is-active{% endif %}">Calibrations</a>
+          <a href="{% url 'master' %}" class="{% if request.path == '/master/' %}is-active{% endif %}">Master</a>
+          <a href="{% url 'invoice' %}" class="{% if request.path == '/invoice/' %}is-active{% endif %}">Invoice</a>
+          <a href="{% url 'report' %}" class="{% if request.path == '/report/' %}is-active{% endif %}">Report</a>
+          <a href="{% url 'quotation' %}" class="{% if request.path == '/quotation/' %}is-active{% endif %}">Quotation</a>
+        </nav>
+        <div class="sai-top-actions">
+          <a class="sai-btn sai-btn-ghost" href="{% url 'index' %}">Home</a>
+          <a class="sai-btn sai-btn-ghost" href="{% url 'login' %}" id="top_logout">Log out</a>
+        </div>
+      </header>
+      {% endblock chrome %}
 
-   {% block scripts %}
-   {% endblock scripts %}
+      <main class="sai-main">
+        {% block content %}{% endblock content %}
+      </main>
+    </div>
 
+    {% block scripts %}{% endblock scripts %}
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
-
   </body>
 </html>

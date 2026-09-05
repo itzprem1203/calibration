@@ -1,0 +1,1229 @@
+{% extends 'app/layouts/main.html' %}
+{% block title %}
+Mastering Page
+{% endblock title %}
+{% block content %}
+ 
+<style>
+body.sai-app {
+  background: linear-gradient(145deg, #0b161c, #152832 50%, #0f1c24) !important;
+}
+.sai-main { width: min(1400px, calc(100% - 1rem)); margin-top: 0.75rem; }
+.full-page {
+  height: auto;
+  min-height: 82vh;
+  width: 100%;
+  display: flex;
+  gap: 0.75rem;
+  color: #f5fafb;
+}
+.first-container { width: 58%; display: flex; flex-direction: column; gap: 0.55rem; }
+.second-container {
+  width: 42%;
+  overflow: auto;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 12px;
+  padding: 0.75rem;
+}
+.container-1, .container-2, .container-3 {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid rgba(13,155,138,0.45) !important;
+  background: rgba(255,255,255,0.06);
+  padding: 0.65rem;
+}
+.container-1 { min-height: 22vh; }
+.container-2 { min-height: 48vh; }
+.container-3 { min-height: 12vh; display: flex; align-items: center; }
+.lable-1, .lable-2 { font-weight: 700; color: rgba(245,250,251,0.85); }
+.input-1, .input-2, .input-5, #dtb {
+  border-radius: 8px !important;
+  border: 1px solid rgba(255,255,255,0.2) !important;
+  background: #fff !important;
+  color: #0f1c24 !important;
+  font-weight: 700;
+  text-align: center;
+}
+#status { display: grid; place-items: center; font-size: 3rem; }
+#cancel-btn {
+  background: linear-gradient(135deg, #c0392b, #962d22) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 8px !important;
+  font-weight: 700 !important;
+}
+#scannedDataTable { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
+#scannedDataTable th, #scannedDataTable td {
+  border: 1px solid rgba(255,255,255,0.18) !important;
+  text-align: center;
+  color: #f5fafb !important;
+  padding: 0.4rem;
+}
+#scannedDataTable thead { background: rgba(13,155,138,0.35); }
+#scannedDataTable tbody tr:nth-child(even) { background: rgba(255,255,255,0.04); }
+#clock-box {
+  background: #fff;
+  color: #0f1c24;
+  border-radius: 8px;
+  font-weight: 700;
+  text-align: center;
+  padding: 0.35rem;
+}
+</style>
+
+<!-- Notification Input Box (Initially Hidden) -->
+<!-- Notification Div -->
+<div id="notificationBox" style="
+    height: 15vh;
+    width: 60vw;
+    display: none;
+    position: fixed;
+    top: 20%;
+    left: 40%;
+    transform: translateX(-50%);
+    background-color: #4CAF50;
+    color: white;
+    text-align: center;
+    padding: 15px 30px;
+    border-radius: 8px;
+    font-size: 4vh;
+    font-weight: bold;
+    z-index: 9999;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+"></div>
+
+<div class="full-page">
+    <div class="first-container">
+        <div class="container-1">
+            <label for="heat_code" class="lable-1">HEAT_CODE:</label>
+            <select id="heat_code" class="input-5">
+                {% for code in vendor_codes %}
+                    <option value="{{ code }}">{{ code }}</option>
+                {% endfor %}
+            </select><br>
+            <label for="scan_value" class="lable-1">KEYWAY_DEPTH:</label>
+            <input type="text" id="scan_value" class="input-1"><br>
+            <label for="scan_code" class="lable-1">SCANNED_DATA:</label>
+            <input type="text" id="scan_code" class="input-1" disabled>
+        </div>
+        <div class="container-2">
+            <label for="SCANNED_JOB_NO" class="lable-2">SCANNED_JOB_NO:</label>
+            <input type="text" id="scanned_job_no" class="input-2" readonly><br>
+            <label for="COMPONENT_NAME" class="lable-2">COMPONENT_NAME:</label>
+            <input type="text" id="component_name" class="input-2" readonly><br>
+            <label for="LOBE_PRESS_D & T" class="lable-2">INJ_CAM_DATE_TIME:</label>
+            <input type="text" id="lobe_press_date_time" class="input-2" readonly>
+            <input type="text" id="status" readonly><br>
+            <label for="COMPONENT_STATUS" class="lable-2">COMPONENT_STATUS:</label>
+            <input type="text" id="component_status" class="input-2" readonly>
+        </div>
+        <div class="container-3">
+            <div class="text-success fs-4" style="font-weight: bold;" >
+                👍 Accept Count:
+                <input type="text" id="Accept_Count" style="height: 5vh; width: 5vw; margin-left: 35%;" readonly>
+            </div>
+        
+            <!-- Reject Text with Icon -->
+            <div class="text-danger fs-4" style="margin-left: 1%; font-weight: bold;">
+                👎 Reject Count:
+                <input type="text" id="Reject_Count" style="height: 5vh; width: 5vw; margin-left: 35%;" readonly>
+            </div>
+
+            <div class="text-primary fs-4" style="margin-left: 1%; font-weight: bold;">
+                🔢 Total Count:
+                <input type="text" id="Total_Count" style="height: 5vh; width: 5vw; margin-left: 35%;" readonly>
+            </div>
+            
+            <!-- Reset Button -->
+            <button type="button" class="btn btn-secondary btn-lg" id="resetBtn">
+                🔄 Reset
+            </button>
+        </div>
+    </div>
+
+
+    <div class="second-container">
+        <div class="dtb" id="database" style="display: flex;">
+            <input type="text" id="dtb" readonly>
+            <a href="{% url 'index' %}">
+                <button type="button" id="cancel-btn"><b>BACK</b></button>
+            </a>
+        </div>
+
+        <label for="date" style="width: 5vw; margin-left:10px;" hidden>DATE:</label>
+        <input type="text" id="date" class="input-2" hidden readonly>
+        <label for="SHIFT" class="lable-2" hidden>SHIFT:</label>
+        <input type="text" id="shift" class="shift-name input-2" hidden><br>
+        <label for="MACHINE" class="lable-2" hidden>MACHINE:</label>
+        <input type="text" id="machine" class="input-2" hidden><br>
+        <label for="OPERATOR" class="lable-2" hidden>OPERATOR:</label>
+        <input type="text" id="operator" class="input-2" hidden>
+        <label for="PART_MODEL" class="lable-2" hidden>PART_MODEL:</label>
+        <input type="text" id="part_model" class="input-2" value="{{ part_model|default_if_none:'' }}" hidden>
+        <label for="CHAR_LIMIT" class="lable-2" hidden>CHAR_LIMIT:</label>
+        <input type="text" id="char_limit" class="input-2" value="{{ char_lmt|default_if_none:'' }}" hidden>
+        <label for="part_no" class="lable-2" hidden>PART_NO:</label>
+        <input type="text" id="part_no" class="input-2" value="{{ part_no|default_if_none:'' }}" hidden>
+    
+        <!-- Table Section -->
+        <div class="table-container" >
+            <table id="scannedDataTable" border="1" cellpadding="5" cellspacing="0">
+                <thead style="font-size: 2vh;" >
+                    <tr>
+                        <th>Sr. No</th>
+                        <th>Scan Job Number</th>
+                        <th>Lobe Press Date and Time</th>
+			            <th>Keyway Depth</th>
+                        <th>Final Date and Time</th>
+                        <th>Component Name</th>
+                        <th>Heat Code</th>
+			            <th>Status</th>
+
+                    </tr>
+                </thead>
+                <tbody style="font-size: 1.8vh;">
+                    <!-- Data rows will be inserted here dynamically via JavaScript or server-side template -->
+                </tbody>
+            </table>
+        </div>
+    
+
+    </div>
+    
+</div>
+
+<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+
+<div class="box" id="clock-box" hidden></div>
+<!-- <button id="delete-data-btn">Delete All Data</button> -->
+
+<label for="nominal" style="margin-top: 10px;" hidden>NOMINAL:</label>
+<input type="text" id="nominal" name="nominal" value="{{ parameter_settings.nominal|default:'' }}" hidden><br>
+<label for="usl" style="margin-top: 10px;" hidden>USL VALUE:</label>
+<input type="text" id="usl" name="usl" value="{{ parameter_settings.usl|default:'' }}" hidden><br>
+<label for="lsl" style="margin-top: 10px;" hidden>LSL VALUE:</label>
+<input type="text" id="lsl" name="lsl" value="{{ parameter_settings.lsl|default:'' }}" hidden><br><br>
+<label for="utl" style="margin-top: 10px;" hidden>UTL VALUE:</label>
+<input type="text" id="utl" name="utl" value="{{ parameter_settings.utl|default:'' }}" hidden><br><br>
+<label for="ltl" style="margin-top: 10px;" hidden>LTL VALUE:</label>
+<input type="text" id="ltl" name="ltl" value="{{ parameter_settings.ltl|default:'' }}" hidden><br><br>
+
+<script>
+
+
+// Define all threshold values
+const nominal = parseFloat(document.getElementById('nominal').value);
+const usl = parseFloat(document.getElementById('usl').value);
+const lsl = parseFloat(document.getElementById('lsl').value);
+const utl = parseFloat(document.getElementById('utl').value);
+const ltl = parseFloat(document.getElementById('ltl').value);
+
+
+  const inputBox = document.getElementById("scan_value");
+  const scanCodeInput = document.getElementById("scan_code");
+
+  // Wait for scanner to finish typing before validating (ms after last character)
+  const SCANNER_DEBOUNCE_MS = 500;
+  let keywayCheckTimer = null;
+  let scanCodeFetchTimer = null;
+  let keywayRejectShownFor = "";
+
+  // Validate keyway depth after full value is received (not per keystroke)
+  function checkInputValue(options) {
+    const notify = options && options.notify === true;
+    const rawValue = inputBox.value.trim();
+    const value = parseFloat(rawValue);
+
+    if (rawValue === "" || isNaN(value)) {
+      inputBox.style.backgroundColor = "red";
+      scanCodeInput.disabled = true;
+      if (notify) {
+        scanCodeInput.value = "";
+      }
+      return;
+    }
+
+    if (value >= lsl && value <= usl) {
+      inputBox.style.backgroundColor = "#00ff00";
+      scanCodeInput.disabled = false;
+      keywayRejectShownFor = "";
+      return;
+    }
+
+    // Red: out of tolerance — only notify after full scan is received
+    inputBox.style.backgroundColor = "red";
+    scanCodeInput.disabled = true;
+    scanCodeInput.value = "";
+    if (notify && rawValue !== keywayRejectShownFor) {
+      keywayRejectShownFor = rawValue;
+      showNotification("⚠️ Your Keyway depth value is rejected, so you do not have permission to scan this data.", "reject");
+    }
+  }
+
+  function scheduleKeywayDepthCheck() {
+    keywayRejectShownFor = "";
+    inputBox.style.backgroundColor = "yellow";
+    scanCodeInput.disabled = true;
+    clearTimeout(keywayCheckTimer);
+    keywayCheckTimer = setTimeout(function () {
+      checkInputValue({ notify: true });
+    }, SCANNER_DEBOUNCE_MS);
+  }
+
+  inputBox.addEventListener("input", scheduleKeywayDepthCheck);
+  inputBox.addEventListener("keydown", function (event) {
+    if (event.key === "Enter") {
+      clearTimeout(keywayCheckTimer);
+      checkInputValue({ notify: true });
+    }
+  });
+
+  checkInputValue({ notify: false });
+
+
+
+
+
+window.addEventListener('DOMContentLoaded', function () {
+    const dtbInput = document.getElementById('dtb');
+
+    // Set initial state
+    dtbInput.value = 'Check The Connection';
+    dtbInput.style.backgroundColor = 'yellow';
+
+    // Function to check connection status
+    function checkConnection() {
+        fetch('/db_connection/')
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    dtbInput.value = 'SQL CONNECTED';
+                    dtbInput.style.backgroundColor = 'lightgreen';
+                } else {
+                    dtbInput.value = 'SQL DISCONNECTED';
+                    dtbInput.style.backgroundColor = 'red';
+                }
+            })
+            .catch(error => {
+                dtbInput.value = 'Error checking connection.';
+                dtbInput.style.backgroundColor = 'red';
+            });
+    }
+
+    // Call it once immediately
+    checkConnection();
+
+    // Repeat every second
+    setInterval(checkConnection, 200); // 1000 ms = 1 sec
+});
+
+// document.getElementById('delete-data-btn').addEventListener('click', function() {
+//     if (confirm('Are you sure you want to delete all data?')) {
+//         fetch('/delete_all_scanned_data/', {
+//             method: 'POST',
+//             headers: {
+//                 'X-CSRFToken': getCookie('csrftoken'),
+//             },
+//         })
+//         .then(response => response.json())
+//         .then(data => alert(data.message))
+//         .catch(error => alert('Error deleting data.'));
+//     }
+// });
+
+// // Helper to get CSRF token
+// function getCookie(name) {
+//     let cookieValue = null;
+//     if (document.cookie && document.cookie !== '') {
+//         const cookies = document.cookie.split(';');
+//         for (let i = 0; i < cookies.length; i++) {
+//             const cookie = cookies[i].trim();
+//             // Does this cookie string begin with the name we want?
+//             if (cookie.substring(0, name.length + 1) === (name + '=')) {
+//                 cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+//                 break;
+//             }
+//         }
+//     }
+//     return cookieValue;
+// }
+
+
+// function updateClock() {
+//     var currentDate = new Date();
+//             var hours = currentDate.getHours();
+//             var minutes = currentDate.getMinutes();
+//             var seconds = currentDate.getSeconds();
+//             var ampm = hours >= 12 ? 'PM' : 'AM';
+//             hours = hours % 12;
+//             hours = hours ? hours : 12; // Handle midnight (0 hours)
+//             minutes = minutes < 10 ? '0' + minutes : minutes;
+//             seconds = seconds < 10 ? '0' + seconds : seconds;
+//             var currentTime = hours + ':' + minutes + ':' + seconds + ' ' + ampm;
+//             var day = currentDate.getDate();
+//             var month = currentDate.getMonth() + 1; // Month is zero-based
+//             var year = currentDate.getFullYear();
+//             var currentDateFormatted = day + '/' + month + '/' + year;
+//     document.getElementById("clock-box").innerHTML = currentDateFormatted + ' ' + currentTime;
+//     // Call this function again after 1 second
+//     setTimeout(updateClock, 1000);
+// }
+// // Call the function to initially display the clock
+// updateClock();
+
+
+document.addEventListener("DOMContentLoaded", function () {
+    setTimeout(function () {
+        let shift = document.getElementById('shift') ? document.getElementById('shift').value : '';
+        console.log('your shift value is this ::', shift);
+    }, 2000); // 2000 milliseconds = 2 seconds
+});
+
+    let lastScannedValue = ""; // To avoid repeated triggers
+
+    function getCharLimit() {
+        const el = document.getElementById("char_limit");
+        const n = parseInt(el ? el.value.trim() : "", 10);
+        return isNaN(n) ? null : n;
+    }
+
+    function isScanCodeComplete(value) {
+        const charLmt = getCharLimit();
+        if (charLmt === null) {
+            return value.length > 0;
+        }
+        return value.length === charLmt;
+    }
+
+    function tryAutoFetchScannedData(force) {
+        let heatInput = document.getElementById("heat_code");
+        let scanValueInput = document.getElementById("scan_value");
+        let scannedInput = document.getElementById("scan_code");
+        let scanValue = scanValueInput.value.trim();
+        let currentValue = scannedInput.value.trim();
+        let heatValue = heatInput.value.trim();
+
+        if (scanValue === "" || scannedInput.disabled) {
+            return;
+        }
+        if (currentValue === "" || currentValue === lastScannedValue) {
+            return;
+        }
+        if (!force && !isScanCodeComplete(currentValue)) {
+            return;
+        }
+
+        if (heatValue === "") {
+            showNotification("⚠️ Your Heat Code is empty. Please enter the Heat Code to scan the data.", "reject");
+            heatInput.focus();
+            return;
+        }
+
+        lastScannedValue = currentValue;
+        fetchData();
+    }
+
+    function scheduleScannedDataFetch() {
+        clearTimeout(scanCodeFetchTimer);
+        scanCodeFetchTimer = setTimeout(function () {
+            tryAutoFetchScannedData(false);
+        }, SCANNER_DEBOUNCE_MS);
+    }
+
+    document.getElementById("scan_code").addEventListener("input", scheduleScannedDataFetch);
+
+function fetchCounts() {
+    const clockBox = document.getElementById('date');
+    const clockText = clockBox ? clockBox.value.trim() : '';  // e.g. "22/5/2025 2:37:50 PM"
+
+    // Split date and time parts
+    const [datePart, timePart] = clockText.split(' ');
+    const [day, month, year] = datePart.split('/').map(Number);
+
+    let [time, period] = [timePart, clockText.split(' ')[2]];  // "2:37:50", "PM"
+    let [hours, minutes, seconds] = time.split(':').map(Number);
+
+    // Convert to 24-hour format if needed
+    if (period === 'PM' && hours < 12) hours += 12;
+    if (period === 'AM' && hours === 12) hours = 0;
+
+    // Format to "YYYY-MM-DD HH:MM:SS"
+    const formattedDate = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')} ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+    console.log('Final date and time to store:', formattedDate
+
+    );
+
+    if (!shift) {
+        console.warn('Shift is not selected, skipping count fetch.');
+        return;
+    }
+
+    setTimeout(function () {
+        let shift = document.getElementById('shift') ? document.getElementById('shift').value : '';
+        console.log('your shift value is this ::', shift);
+    $.ajax({
+        url: '/get_counts/',
+        type: 'GET',
+        data: {
+            'shift': shift,
+            'date': formattedDate
+        },
+        dataType: 'json',
+        success: function(response) {
+            document.getElementById('Accept_Count').value = response.accept_count;
+            document.getElementById('Reject_Count').value = response.reject_count;
+            document.getElementById('Total_Count').value = response.total_count;
+        },
+        error: function(xhr) {
+            console.error('Error fetching counts', xhr);
+        }
+    });
+    }, 1000);
+}
+
+
+    let acceptCount = 0;
+    let rejectCount = 0;
+    let srNo = 1;
+
+    let heatInput = document.getElementById('heat_code');
+    let scanInput = document.getElementById('scan_code');
+    let scanValue = document.getElementById('scan_value');
+
+    document.addEventListener('DOMContentLoaded', function() {
+        let input = document.getElementById('scan_code');
+        scanValue.focus();
+
+        scanInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                if (scanInput.disabled) {
+                    showNotification('⚠️ Please enter KEYWAY DEPTH first before scanning data.', 'reject');
+                    scanValue.focus();
+                    return;
+                }
+                clearTimeout(scanCodeFetchTimer);
+                tryAutoFetchScannedData(true);
+            }
+        });
+
+        heatInput.addEventListener('keydown', function (event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+
+
+                if (heatInput.value.trim() === '') {
+                    showNotification('❌ ..PLEASE CHECK THE HEAT CODE FIELD IS NOT EMPTY.. ❌' , 'reject');
+                    heatInput.focus();
+                }
+            }
+        });
+
+        heatInput.addEventListener('keydown', function (event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+
+
+                if (heatInput.value.trim() !== '') {
+                    scanValue.focus();
+                }
+            }
+        });
+
+        scanValue.addEventListener('keydown', function (event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+
+
+                if (scanValue.value.trim() === '') {
+                    showNotification('❌ ..PLEASE CHECK THE KEYWAYDEPTH FIELD IS NOT EMPTY.. ❌' , 'reject');
+                    scanValue.focus();
+                }
+            }
+        });
+
+        scanValue.addEventListener('keydown', function (event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                clearTimeout(keywayCheckTimer);
+
+                if (scanValue.value.trim() !== '') {
+                    checkInputValue({ notify: true });
+                    if (!scanInput.disabled) {
+                        scanInput.focus();
+                    } else {
+                        showNotification('⚠️ KEYWAY DEPTH is out of range. Fix it before scanning.', 'reject');
+                        scanValue.focus();
+                    }
+                }
+            }
+        });
+
+        // Reset Button Functionality
+document.getElementById('resetBtn').addEventListener('click', function () {
+    const clockBox = document.getElementById('date');
+    const clockText = clockBox ? clockBox.value.trim() : '';  // e.g. "22/5/2025 2:37:50 PM"
+
+    // Split date and time parts
+    const [datePart, timePart] = clockText.split(' ');
+    const [day, month, year] = datePart.split('/').map(Number);
+
+    let [time, period] = [timePart, clockText.split(' ')[2]];  // "2:37:50", "PM"
+    let [hours, minutes, seconds] = time.split(':').map(Number);
+
+    // Convert to 24-hour format if needed
+    if (period === 'PM' && hours < 12) hours += 12;
+    if (period === 'AM' && hours === 12) hours = 0;
+
+    // Format to "YYYY-MM-DD HH:MM:SS"
+    const formattedDateTime = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')} ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+    console.log('Final date and time to store:', formattedDateTime);
+
+    // Send the date to the server via AJAX
+    $.ajax({
+        url: '/update_reset_time/',
+        method: 'POST',
+        data: {
+            'date': formattedDateTime,
+            'csrfmiddlewaretoken': getCSRFToken(),
+        },
+        success: function (response) {
+            showNotification('✅ Reset time updated successfully.', 'accept');
+        },
+        error: function () {
+            showNotification('❌ Failed to update reset time.', 'reject');
+        }
+    });
+});
+
+
+    });
+
+    function fetchData() {
+        let scanCodeEl = document.getElementById('scan_code');
+        let scanValueEl = document.getElementById('scan_value');
+
+        if (scanValueEl.value.trim() === "" || scanCodeEl.disabled) {
+            showNotification('⚠️ Please enter KEYWAY DEPTH first before scanning data.', 'reject');
+            scanValueEl.focus();
+            return;
+        }
+
+        let scannedData = scanCodeEl.value.trim(); // Trim to remove spaces
+
+
+        let heatCode = document.getElementById('heat_code').value.trim(); // Trim to remove spaces
+
+        const partModel = document.getElementById('part_model').value.trim();
+        const partNo = document.getElementById('part_no').value.trim();
+        const charLmt = parseInt(document.getElementById('char_limit').value.trim());
+
+
+        if (!isNaN(charLmt) && scannedData.length !== charLmt) {
+        showNotification(`❌ Scanned value must be exactly ${charLmt} characters long ❌`, 'reject');
+        document.getElementById('scan_code').focus();
+        return;
+    }
+
+    // Step 2: Check if scannedData starts with partNo
+    if (!scannedData.startsWith(partNo)) {
+        showNotification('❌ Scanned data does not match the Part No ❌', 'reject');
+        document.getElementById('scan_code').focus();
+        return;
+    }
+
+
+        $.ajax({
+            url: '/fetch_data/',
+            data: {
+                'scan_code': scannedData,
+                'heat_code': heatCode
+            },
+            dataType: 'json',
+            success: function(response) {
+                document.getElementById('scanned_job_no').value = response.scanned_job_no;
+                document.getElementById('component_status').value = response.component_status;
+                document.getElementById('lobe_press_date_time').value = response.lobe_press_date_time;
+                document.getElementById('component_name').value = response.component_name;
+
+                
+
+                // Set the new fields
+                document.getElementById('shift').value = response.shift || '';
+                document.getElementById('machine').value = response.machine || '';
+                document.getElementById('operator').value = response.operator || '';
+
+                // Change Status Box Color
+                let statusInput = document.getElementById('status');
+                statusInput.style.backgroundColor = response.status_color ;
+
+
+                if (response.error_type === 'multiple_records') {
+                    showNotification('❌ Multiple records found for this job number. Please verify and scan the correct one. ❌', 'reject');
+                    statusInput.value = "❌";
+                    statusInput.style.backgroundColor = 'red';
+                    // Clear input fields
+                    document.getElementById('scan_code').value = '';
+                    document.getElementById('scanned_job_no').value = '';
+
+                    // Refocus on scan_code input
+                    document.getElementById('scan_code').focus();
+                    return;
+                }
+
+                if (!response.found) {
+                    showNotification('❌ ..This job number is not checked in previous gate.. ❌', 'reject');
+                    statusInput.value = "❌";
+                    statusInput.style.backgroundColor = 'red';
+                    // Clear input fields
+                    document.getElementById('scan_code').value = '';
+                    document.getElementById('scanned_job_no').value = '';
+
+                    // Refocus on scan_code input
+                    document.getElementById('scan_code').focus();
+                    return;
+                }
+
+                // Set the Emoji based on status
+                if (response.component_status) {
+                    if (response.component_status.toLowerCase() === 'accept') {
+                        statusInput.value = "✅";
+                    } else if (response.component_status.toLowerCase() === 'reject') {
+                        statusInput.value = "❌";
+                    } else if (response.component_status.toLowerCase() === 'rework') {
+                        statusInput.value = "❌";
+                    }
+                } else {
+                    statusInput.value = "❌";
+                    statusInput.style.backgroundColor = 'red';
+                }
+
+                // Show Notification (replacing alert)
+                showNotification(response.notification, response.notification_status);
+
+
+                if (response.found) {
+
+                    let finalDateTime = new Date().toLocaleString();
+
+                    // Add final date-time to your response data manually
+                    response.final_date_time = finalDateTime;
+                    // Add data to table
+                    addRowToTable(response, finalDateTime);
+
+                    // Increase Accept/Reject Count based on status
+                    if (response.component_status && response.component_status.toLowerCase() === 'accept') {
+                        showNotification('✅ ..This job is accepted in previous gate..✅' , 'accept');
+                        statusInput.style.backgroundColor = 'green'; // Yellowish warning color
+                    } else if (response.component_status && response.component_status.toLowerCase() === 'reject') {
+                        showNotification('❌ ..This job is rejected in previous gate.. ❌' , 'reject');
+                        statusInput.style.backgroundColor = 'red'; // Yellowish warning color
+                    }
+
+                    else if (response.component_status && response.component_status.toLowerCase() === 'rework') {
+                        showNotification('❌ ..This job is rejected in previous gate.. ❌' , 'reject');
+                        statusInput.style.backgroundColor = 'red'; // Yellowish warning color
+                    }
+
+                    saveDataToServer(response);
+
+                    setTimeout(function(){
+                        fetchCounts();
+                    },1000);
+                    
+
+                    // Clear input fields
+                    document.getElementById('scan_code').value = '';
+                    setTimeout(function () {
+                        document.getElementById('scan_value').value = '';
+                    }, 2000);
+                    // Refocus on scan_code input
+                    document.getElementById('scan_value').focus();
+                }
+            },
+            error: function(xhr) {
+                let statusInput = document.getElementById('status'); // Get your input
+
+                if (xhr.status == 404) {
+                    statusInput.value = "❌";
+                }else if (xhr.status == 500 && xhr.responseJSON && xhr.responseJSON.error) {
+                    // Show custom SQL Server disconnection error
+                    showNotification('❌ ' + xhr.responseJSON.error + ' ❌', 'reject');
+                    statusInput.value = "❌";
+                }
+                 else {
+                    showNotification('An error occurred.');
+                }
+            }
+        });
+    }
+
+function showNotification(message, status = null) {
+    let notificationBox = document.getElementById('notificationBox');
+
+    // Set message
+    notificationBox.innerText = message;
+
+    // Set background color based on status
+    if (status === 'accept') {
+        notificationBox.style.backgroundColor = '#4CAF50'; // Green for Accept
+    } else if (status === 'reject') {
+        notificationBox.style.backgroundColor = '#f44336'; // Red for Reject
+    } else if (status === 'rework') {
+        notificationBox.style.backgroundColor = 'yellow'; // Orange for Not Found
+    } else {
+        notificationBox.style.backgroundColor = 'yellow'; // Default Green
+    }
+
+    // Show the box
+    notificationBox.style.display = 'block';
+
+    // Hide after 3 seconds
+    setTimeout(function() {
+        notificationBox.style.display = 'none';
+    }, 3000);
+}
+
+function addRowToTable(data) {
+    let tbody  = document.querySelector('.second-container table tbody');
+    let container = document.querySelector('.second-container');
+
+
+
+    if (!tbody) {
+        console.error('Table body not found. Make sure the table with <thead> exists.');
+        return;
+    }
+    // Get heat code value from input field
+    let heatCodeInput = document.getElementById('heat_code');
+    let heatCodeValue = heatCodeInput ? heatCodeInput.value.trim() : '';
+    let scanCodeInput = document.getElementById('scan_value');
+    let scanCodeValue = scanCodeInput ? scanCodeInput.value.trim() : '';
+
+
+    let row = document.createElement('tr');
+    row.classList.add('new-row');
+    row.innerHTML = `
+        <td>${srNo++}</td>
+        <td>${data.scanned_job_no}</td>
+        <td>${data.lobe_press_date_time}</td>
+        <td>${scanCodeValue}</td> <!-- Heat code value -->
+        <td>${new Date().toLocaleString()}</td>
+        <td>${data.component_name}</td>
+        <td>${heatCodeValue}</td> <!-- Heat code value -->
+	<td>${data.component_status}</td>
+    `;
+    tbody.appendChild(row);
+
+    container.scrollTop = container.scrollHeight;
+}
+
+
+
+function saveDataToServer() {
+    let tableData = [];
+    let tbody = document.querySelector('.second-container table tbody');
+
+    if (!tbody) {
+        console.error('No table found to save data.');
+        return;
+    }
+
+function formatToDateTime(input) {
+const clockBox = document.getElementById('date');
+    const clockText = clockBox ? clockBox.value.trim() : '';  // e.g. "22/5/2025 2:37:50 PM"
+
+    // Split date and time parts
+    const [datePart, timePart] = clockText.split(' ');
+    const [day, month, year] = datePart.split('/').map(Number);
+
+    let [time, period] = [timePart, clockText.split(' ')[2]];  // "2:37:50", "PM"
+    let [hours, minutes, seconds] = time.split(':').map(Number);
+
+    // Convert to 24-hour format if needed
+    if (period === 'PM' && hours < 12) hours += 12;
+    if (period === 'AM' && hours === 12) hours = 0;
+
+    // Format to "YYYY-MM-DD HH:MM:SS"
+    const formattedDateTime = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')} ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+    console.log('Final date and time to storesssssssssssssssssssssssssssss:', formattedDateTime);
+    return formattedDateTime;
+}
+
+
+
+
+    tbody.querySelectorAll('tr.new-row').forEach(function (row) {
+        let cells = row.querySelectorAll('td');
+        let rawFinalDate = cells[4].innerText;
+        let parsedFinalDate = formatToDateTime(rawFinalDate);
+
+        tableData.push({
+            sr_no: cells[0].innerText,
+            scanned_job_no: cells[1].innerText,
+            lobe_press_date_time: cells[2].innerText,
+            component_status: cells[7].innerText,
+            final_date_time: parsedFinalDate,  // Now formatted properly
+            component_name: cells[5].innerText,
+            heat_code: cells[6].innerText,
+        });
+    });
+
+    if (tableData.length === 0) {
+        console.log('No new data to save. Trying to fetch all rows instead.');
+
+        tbody.querySelectorAll('tr').forEach(function (row) {
+            let cells = row.querySelectorAll('td');
+            let rawFinalDate = cells[4].innerText;
+            let parsedFinalDate = formatToDateTime(rawFinalDate);
+
+            tableData.push({
+                sr_no: cells[0].innerText,
+                scanned_job_no: cells[1].innerText,
+                lobe_press_date_time: cells[2].innerText,
+                component_status: cells[7].innerText,
+                final_date_time: parsedFinalDate,
+                component_name: cells[5].innerText,
+                heat_code: cells[6].innerText,
+            });
+        });
+    }
+
+    let operator = document.getElementById('operator') ? document.getElementById('operator').value : '';
+    let machine = document.getElementById('machine') ? document.getElementById('machine').value : '';
+    let scan_value = document.getElementById("scan_value") ? document.getElementById('scan_value').value : '';
+    console.log('your data for this input box is this to store in my databaase:',scan_value);
+
+    const formattedDate = formatToDateTime();
+    console.log('your data from this date field is this to stoethis :', formattedDate);
+    setTimeout(function () {
+        let shift = document.getElementById('shift') ? document.getElementById('shift').value : '';
+        console.log('your shift value is this ::', shift);
+    $.ajax({
+        url: '/save_scanned_data/',
+        method: 'POST',
+        data: {
+            'table_data': JSON.stringify(tableData),
+            'operator': operator,
+            'shift': shift,
+            'machine': machine,
+            'date': formattedDate,
+            'scan_value': scan_value,
+            'csrfmiddlewaretoken': getCSRFToken(),
+        },
+        success: function (response) {
+            console.log('Data saved successfully!');
+
+            // Optional: After saving, remove 'new-row' class
+            tbody.querySelectorAll('tr.new-row').forEach(function (row) {
+                row.classList.remove('new-row');
+            });
+        },
+        error: function (xhr) {
+            console.error('Error saving data.');
+        }
+    });
+    }, 1000);
+}
+
+
+function getCSRFToken() {
+    let cookieValue = null;
+    let cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+        let cookie = cookies[i].trim();
+        if (cookie.startsWith('csrftoken=')) {
+            cookieValue = decodeURIComponent(cookie.substring('csrftoken='.length));
+            break;
+        }
+    }
+    return cookieValue;
+}
+
+var shiftValues = JSON.parse('{{ shift_time|safe }}');
+console.log('Shift values are this ::::::::::::', shiftValues);
+
+// Function to convert 12-hour time to 24-hour format
+function convertTo24Hour(timeString) {
+    let [time, modifier] = timeString.trim().split(' ');
+    let [hours, minutes, seconds] = time.split(':');
+    hours = parseInt(hours, 10);
+
+    if (modifier === 'PM' && hours !== 12) {
+        hours += 12;
+    }
+    if (modifier === 'AM' && hours === 12) {
+        hours = 0;
+    }
+
+    return `${hours.toString().padStart(2, '0')}:${minutes}:${seconds}`;
+}
+
+// Function to determine and update the shift name based on the current time
+function setDateTimes() {
+    let now = new Date();
+    let currentTime = now.toTimeString().split(' ')[0]; // 'HH:MM:SS'
+
+    let shiftName = shiftValues[0].shift; // Default to the first shift
+
+    for (let i = shiftValues.length - 1; i >= 0; i--) {
+        let shift = shiftValues[i];
+        let shift24HourTime = convertTo24Hour(shift.shift_time);
+
+        if (currentTime >= shift24HourTime) {
+            shiftName = shift.shift;
+            break;
+        }
+    }
+
+    document.querySelectorAll('.shift-name').forEach(element => {
+        element.value = shiftName;
+    });
+}
+
+// Function to update current date and time in the input box
+function updateClock() {
+    let now = new Date();
+    let hours = now.getHours();
+    let minutes = now.getMinutes().toString().padStart(2, '0');
+    let seconds = now.getSeconds().toString().padStart(2, '0');
+    let ampm = hours >= 12 ? 'PM' : 'AM';
+
+    let displayHours = hours % 12 || 12; // Convert to 12-hour format
+    let currentTime = `${displayHours}:${minutes}:${seconds} ${ampm}`;
+
+    let day = now.getDate().toString().padStart(2, '0');
+    let month = (now.getMonth() + 1).toString().padStart(2, '0');
+    let year = now.getFullYear();
+    let currentDateFormatted = `${day}/${month}/${year}`;
+
+    document.getElementById("date").value = `${currentDateFormatted} ${currentTime}`;
+
+    checkShiftNotification(currentTime);
+
+    setTimeout(updateClock, 1000);
+}
+
+// Function to check if the current time matches any shift time
+function checkShiftNotification(currentTime) {
+    let currentTime24Hour = convertTo24Hour(currentTime);
+
+    shiftValues.forEach(shift => {
+        let shiftTime24Hour = convertTo24Hour(shift.shift_time);
+        if (currentTime24Hour === shiftTime24Hour) {
+            showShiftNotification();
+        }
+    });
+}
+
+// Function to get the shift time for a given shift name
+function getShiftTimeForShift(shiftName) {
+    let shift = shiftValues.find(s => s.shift === shiftName);
+    return shift ? shift.shift_time : null;
+}
+
+// Function to format shift time with the current date
+function combineShiftTimeWithCurrentDate(shiftName) {
+    let shiftTime = getShiftTimeForShift(shiftName);
+    if (!shiftTime) {
+        console.error('Shift time not found for shift:', shiftName);
+        return null;
+    }
+
+    let shift24HourTime = convertTo24Hour(shiftTime);
+    let shiftDateTime = new Date();
+    let [hours, minutes, seconds] = shift24HourTime.split(':');
+    
+    shiftDateTime.setHours(parseInt(hours));
+    shiftDateTime.setMinutes(parseInt(minutes));
+    shiftDateTime.setSeconds(parseInt(seconds));
+
+    let day = shiftDateTime.getDate().toString().padStart(2, '0');
+    let month = (shiftDateTime.getMonth() + 1).toString().padStart(2, '0');
+    let year = shiftDateTime.getFullYear();
+
+    let displayHours = shiftDateTime.getHours() % 12 || 12;
+    let ampm = shiftDateTime.getHours() >= 12 ? 'PM' : 'AM';
+    
+    let formattedDateTime = `${year}-${month}-${day} ${displayHours}:${minutes}:${seconds} ${ampm}`;
+    
+    return formattedDateTime;
+}
+
+// Function to send shift data via AJAX
+// Function to send shift data via AJAX with from_date and end_date
+function postShiftData(shiftName) {
+    let fromDate = combineShiftTimeWithCurrentDate(shiftName); // Shift start time (current date + shift time)
+    console.log('your from data is this :',fromDate);
+    let now = new Date();
+
+    let day = now.getDate().toString().padStart(2, '0');
+    let month = (now.getMonth() + 1).toString().padStart(2, '0');
+    let year = now.getFullYear();
+    let hours = now.getHours() % 12 || 12;
+    let minutes = now.getMinutes().toString().padStart(2, '0');
+    let seconds = now.getSeconds().toString().padStart(2, '0');
+    let ampm = now.getHours() >= 12 ? 'PM' : 'AM';
+
+    let endDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds} ${ampm}`;
+
+
+}
+
+
+
+
+
+
+function getCSRFToken(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        let cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            let cookie = cookies[i].trim();
+            if (cookie.startsWith(name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+
+
+
+function checkShiftChange() {
+    let now = new Date();
+    let currentTime = now.toTimeString().split(' ')[0];
+    let currentShift = null;
+    let previousShift = null;
+
+    for (let i = 0; i < shiftValues.length; i++) {
+        let shift = shiftValues[i];
+        let shiftTime24Hour = convertTo24Hour(shift.shift_time);
+
+        if (currentTime >= shiftTime24Hour) {
+            previousShift = currentShift;
+            currentShift = shift.shift;
+        } else {
+            break;
+        }
+    }
+
+    // Check 5 seconds before next shift starts (existing logic)
+    let nextShiftTime = null;
+    for (let i = 0; i < shiftValues.length; i++) {
+        let shiftTime24Hour = convertTo24Hour(shiftValues[i].shift_time);
+        if (currentTime < shiftTime24Hour) {
+            nextShiftTime = shiftTime24Hour;
+            break;
+        }
+    }
+
+    if (nextShiftTime) {
+        let shiftDateTime = new Date();
+        let [hours, minutes, seconds] = nextShiftTime.split(':');
+        shiftDateTime.setHours(parseInt(hours));
+        shiftDateTime.setMinutes(parseInt(minutes));
+        shiftDateTime.setSeconds(parseInt(seconds) - 5);
+
+        let shiftMinusFiveSec = shiftDateTime.toTimeString().split(' ')[0];
+
+        if (currentTime === shiftMinusFiveSec && currentShift) {
+            checkAndRedirect(currentShift);
+        }
+    }
+
+    // NEW: Check if previous shift was missed and not redirected
+    if (previousShift) {
+        fetch(`/shift_redirect_status/?shift=${encodeURIComponent(previousShift)}`)
+            .then(response => response.json())
+            .then(data => {
+                if (!data.redirected) {
+                    console.log('Missed previous shift redirect. Redirecting now...');
+                    let fromDate = combineShiftTimeWithCurrentDate(previousShift);
+                    let now = new Date();
+                    let endDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${now.getHours() % 12 || 12}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')} ${now.getHours() >= 12 ? 'PM' : 'AM'}`;
+
+                    fetch('/save_shift_redirect/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCSRFToken('csrftoken')
+                        },
+                        body: JSON.stringify({ shift: previousShift })
+                    });
+
+                    setTimeout(() => {
+                        window.location.href = `/report/?from_date=${encodeURIComponent(fromDate)}&to_date=${encodeURIComponent(endDate)}`;
+                    }, 1000);
+                }
+            });
+    }
+}
+
+function checkAndRedirect(shiftName) {
+    fetch(`/shift_redirect_status/?shift=${encodeURIComponent(shiftName)}`)
+        .then(response => response.json())
+        .then(data => {
+            if (!data.redirected) {
+                console.log('Redirecting to report page...');
+
+                let fromDate = combineShiftTimeWithCurrentDate(shiftName);
+                let now = new Date();
+                let endDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${now.getHours() % 12 || 12}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')} ${now.getHours() >= 12 ? 'PM' : 'AM'}`;
+
+                fetch('/save_shift_redirect/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken('csrftoken')
+                    },
+                    body: JSON.stringify({ shift: shiftName })
+                });
+
+                setTimeout(() => {
+                    window.location.href = `/report/?from_date=${encodeURIComponent(fromDate)}&to_date=${encodeURIComponent(endDate)}`;
+                }, 1000);
+            }
+        });
+}
+
+
+
+
+// Function to display shift change notification
+function showShiftNotification() {
+    let notification = document.createElement('div');
+    notification.id = 'shift-notification';
+    notification.innerText = 'It\'s time to switch to the next shift!';
+    Object.assign(notification.style, {
+        position: 'fixed', top: '10px', right: '10px',
+        backgroundColor: 'green', color: 'white',
+        padding: '10px', borderRadius: '5px'
+    });
+
+    document.body.appendChild(notification);
+
+    // setTimeout(() => {
+    //     notification.remove();
+    //     window.location.href = '/report/';
+    // }, 3000);
+}
+
+// Start the clock and shift checking processes
+updateClock();
+setInterval(setDateTimes, 1000);
+setInterval(checkShiftChange, 500);
+
+
+</script>
+
+
+
+{% endblock content %}

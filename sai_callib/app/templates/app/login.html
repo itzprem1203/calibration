@@ -1,265 +1,92 @@
 <!DOCTYPE html>
-{% load static %} 
+{% load static %}
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Page</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login | SAI Accurate Instruments</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;550;600;700&family=Syne:wght@600;700;750&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/theme.css' %}">
 </head>
-<style>
-    @import url("https://fonts.googleapis.com/css?family=Raleway:400,700");
-*,
-*:before,
-*:after {
-  box-sizing: border-box;
-}
-
-body {
-  min-height: 100vh;
-  font-family: "Raleway", sans-serif;
-  margin: 0;
-}
-
-@font-face {
-  font-family: 'CustomFont';
-  src: url('fonts/CustomFont.woff2') format('woff2'),
-       url('fonts/CustomFont.woff') format('woff');
-  font-weight: normal;
-  font-style: normal;
-}
-
-.header {
-  position: absolute;
-  width: 1000px;
-  top: 30px;
-  left: 50%;
-  transform: translateX(-50%);
-  color: white;
-  font-weight: bold;
-  font-size: 45px;
-  z-index: 20; /* Ensures it stays on top */
-  text-shadow: 2px 2px 0px grey, 
-               -2px 2px 0px grey, 
-               2px -2px 0px grey, 
-               -2px -2px 0px grey, 
-               0px 2px 0px grey, 
-               2px 0px 0px grey, 
-               -2px 0px 0px grey, 
-               0px -2px 0px grey;
-  font-family: 'CustomFont', sans-serif; /* Apply the custom font */
-}
-
-.header1 {
-  position: absolute;
- margin-top: 100px;
-  left: 50%;
-  transform: translateX(-50%);
-  color: white;
-  font-weight: bold;
-  font-size: 45px;
-  z-index: 20; /* Ensures it stays on top */
-  text-shadow: 2px 2px 0px grey, 
-               -2px 2px 0px grey, 
-               2px -2px 0px grey, 
-               -2px -2px 0px grey, 
-               0px 2px 0px grey, 
-               2px 0px 0px grey, 
-               -2px 0px 0px grey, 
-               0px -2px 0px grey;
-  font-family: 'CustomFont', sans-serif; /* Apply the custom font */
-}
-
-.container {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-}
-
-.password-container {
-    display: flex;
-    align-items: center;
-    width: 100%;
-}
-
-.container:hover .top:before, .container:hover .top:after,
-.container:hover .bottom:before,
-.container:hover .bottom:after, .container:active .top:before, .container:active .top:after,
-.container:active .bottom:before,
-.container:active .bottom:after {
-  margin-left: 200px;
-  transform-origin: -200px 50%;
-  transition-delay: 0s;
-}
-
-.container:hover .center, .container:active .center {
-  opacity: 1;
-  transition-delay: 0.2s;
-}
-
-.top:before, .top:after,
-.bottom:before,
-.bottom:after {
-  content: "";
-  display: block;
-  position: absolute;
-  width: 200vmax;
-  height: 200vmax;
-  top: 50%;
-  left: 50%;
-  margin-top: -100vmax;
-  transform-origin: 0 50%;
-  transition: all 0.5s cubic-bezier(0.445, 0.05, 0, 1);
-  z-index: 10;
-  opacity: 0.65;
-  transition-delay: 0.2s;
-}
-
-.top:before {
-  transform: rotate(45deg);
-  background: #e46569;
-}
-.top:after {
-  transform: rotate(135deg);
-  background: #ecaf81;
-}
-
-.bottom:before {
-  transform: rotate(-45deg);
-  background: #60b8d4;
-}
-.bottom:after {
-  transform: rotate(-135deg);
-  background: #3745b5;
-}
-
-.center {
-  position: absolute;
-  width: 400px;
-  height: 400px;
-  top: 50%;
-  left: 50%;
-  margin-left: -200px;
-  margin-top: -200px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 30px;
-  opacity: 0;
-  transition: all 0.5s cubic-bezier(0.445, 0.05, 0, 1);
-  transition-delay: 0s;
-  color: #333;
-}
-
-.center input {
-  width: 100%;
-  padding: 15px;
-  margin: 5px;
-  border-radius: 1px;
-  border: 1px solid #ccc;
-  font-family: inherit;
-}
-
-.toggle-password {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 20px; /* Default size */
-    margin-left: -40px; /* Adjust to overlap with the input */
-}
-
-.toggle-password.large-emoji {
-    font-size: 30px; /* Increase the size of the emoji */
-}
-#sai_image{
-  position: absolute;
- margin-top: 110px;
- margin-left: 200px;
- height: 170px;
- width: 170px;
-  transform: translateX(-50%);
-  z-index: 20; /* Ensures it stays on top */ 
-  outline: 4px solid white;
-}
-#close{
-            width: 50%;
-            background-color: red;
-            text-align: center;
-           margin-bottom: 2%;
-            font-weight: bold;
-            font-size: 2vw;
-            margin-left: 5%;
-            color: white;
-            font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
-
-        }
-</style>
-<body>
-    
-    <div class="header">
-        Sai Accurate Multigauging Fixtures & Gauges<br>
-    </div>
-    <div class="header1">
-        Calibration Certificate Software
-    </div>
-    <div class="container">
-        <img id="sai_image" src="{% static 'images/sai.jpg' %}" >
-        <div class="top"></div>
-        <div class="bottom"></div>
-        <div class="center">
-          <h2>Login Page</h2>
-          <input type="text" id="user_id" placeholder="UserId"/>
-          <div class="password-container">
-            <input type="password" id="password" placeholder="Password"/>
-            <button type="button" class="toggle-password" onclick="togglePasswordVisibility()">👁</button><br>
-
-           
-          </div>
-           <button id="close" onclick="closeApp()">LOG OUT</button>
+<body class="sai-login">
+  <div class="login-stage">
+    <div class="login-hero">
+      <section class="login-brand-pane">
+        <div>
+          <img id="sai_image" src="{% static 'images/sai.jpg' %}" alt="SAI Accurate Instruments" onerror="this.onerror=null;this.src='{% static 'images/demo.jpg' %}'">
+          <h1>Sai Accurate Multigauging Fixtures &amp; Gauges</h1>
+          <p class="tagline">Calibration Certificate Software built for precision workflows.</p>
         </div>
-        
+        <div class="login-meta">
+          54 GVT Complex, Nazarathpet, Chennai-600123<br>
+          saiaccurate@gmail.com · www.saiaccurate.com<br>
+          PH: 9344438999 / 9787375999
+        </div>
+      </section>
+
+      <section class="login-form-pane">
+        <h2>Sign in</h2>
+        <p class="hint">Enter your credentials to open the calibration workspace.</p>
+
+        <div class="login-field">
+          <label for="user_id">User ID</label>
+          <input type="text" id="user_id" placeholder="Enter user ID" autocomplete="username">
+        </div>
+
+        <div class="login-field">
+          <label for="password">Password</label>
+          <div class="password-row">
+            <input type="password" id="password" placeholder="Enter password" autocomplete="current-password">
+            <button type="button" class="toggle-password" onclick="togglePasswordVisibility()" aria-label="Show password">Show</button>
+          </div>
+        </div>
+
+        <div class="login-actions">
+          <button type="button" class="sai-btn sai-btn-primary" id="login_btn" onclick="attemptLogin()">Continue</button>
+          <button type="button" id="close" onclick="closeApp()">Close application</button>
+        </div>
+      </section>
     </div>
+  </div>
 
 <script>
-
-
 function closeApp() {
-    window.pywebview.api.shutdown();  // Call the shutdown function
+  if (window.pywebview && window.pywebview.api && window.pywebview.api.shutdown) {
+    window.pywebview.api.shutdown();
+  } else {
+    window.location.href = "{% url 'login' %}";
+  }
 }
 
-
-
-
-   function togglePasswordVisibility() {
-    const passwordInput = document.getElementById('password');
-    const button = document.querySelector('.toggle-password');
-
-    if (passwordInput.type === 'password') {
-        passwordInput.type = 'text';
-        button.textContent = '🙈'; // Change to monkey emoji
-        button.classList.add('large-emoji'); // Increase the emoji size
-    } else {
-        passwordInput.type = 'password';
-        button.textContent = '👁'; // Change to eye emoji
-        button.classList.remove('large-emoji'); // Reset emoji size
-    }
+function togglePasswordVisibility() {
+  const passwordInput = document.getElementById('password');
+  const button = document.querySelector('.toggle-password');
+  if (passwordInput.type === 'password') {
+    passwordInput.type = 'text';
+    button.textContent = 'Hide';
+  } else {
+    passwordInput.type = 'password';
+    button.textContent = 'Show';
+  }
 }
 
- // Function to handle Enter key press
- document.addEventListener("keydown", function (event) {
-      if (event.key === "Enter") {
-        const userId = document.getElementById("user_id").value.trim();
-        const password = document.getElementById("password").value;
+function attemptLogin() {
+  const userId = document.getElementById('user_id').value.trim();
+  const password = document.getElementById('password').value;
+  if (userId === 'admin' && password === 'admin') {
+    window.location.href = "{% url 'index' %}";
+  } else {
+    alert('Invalid UserId or Password!');
+  }
+}
 
-        if (userId === "admin" && password === "admin") {
-          window.location.href = "index/";
-        } else {
-          alert("Invalid UserId or Password!");
-        }
-      }
-    });
+document.addEventListener('keydown', function (event) {
+  if (event.key === 'Enter') {
+    attemptLogin();
+  }
+});
 </script>
 </body>
 </html>
