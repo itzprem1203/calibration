@@ -461,7 +461,7 @@ $(document).on('click', '#tableBody-1 tr', function() {
             checkbox.disabled = true; // Makes the checkbox read-only
             checkbox.style.width = '100%';
             checkbox.style.margin = '0 auto';
-            cell.appendChild(checkbox);
+            $(this).empty().append(checkbox);
         } 
             // For other cells, including the first column (inward_no)
             else {
@@ -478,15 +478,28 @@ function collectData() {
     let tableRows = [];
     $('#tableBody-1 tr').each(function() {
         var row = $(this);
+        function cellVal(n, prefer) {
+            var td = row.find('td:nth-child(' + n + ')');
+            if (prefer === 'select' && td.find('select').length) {
+                return td.find('select').val() || '';
+            }
+            if (td.find('input').length) {
+                return td.find('input').val() || '';
+            }
+            if (td.find('select').length) {
+                return td.find('select').val() || '';
+            }
+            return (td.text() || '').trim();
+        }
         var rowData = {
-            inward_no: row.find('td:nth-child(1) input').length ? row.find('td:nth-child(1) input').val() : row.find('td:nth-child(1)').text().trim(),
-            item: row.find('td:nth-child(2) input').val(),
-            hsn: row.find('td:nth-child(3) input').val(),
-            srNo: row.find('td:nth-child(4) input').val(),
-            idNo: row.find('td:nth-child(5) input').val(),
-            range: row.find('td:nth-child(6) select').val(),
-            make: row.find('td:nth-child(7) input').val(),
-            channels: row.find('td:nth-child(8) select').val()
+            inward_no: cellVal(1),
+            item: cellVal(2),
+            hsn: cellVal(3),
+            srNo: cellVal(4),
+            idNo: cellVal(5),
+            range: cellVal(6, 'select'),
+            make: cellVal(7),
+            channels: cellVal(8, 'select')
         };
         
         // Only push rows with a valid inward_no or item value to avoid empty entries

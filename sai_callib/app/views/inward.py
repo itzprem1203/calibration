@@ -18,68 +18,92 @@ def inward(request):
         try:
             data = json.loads(request.body)
             print("The value get from the front end:", data)
-            customer_name = data.get('customerName')
-            wo_date = data.get('woDate')
-            work_order_no = data.get('workOrderNo')
-            customer_po_no = data.get('customerPoNo')
-            customer_ref_date = data.get('customerRefDate')
-            order_type = data.get('orderType')
-            customer_address = data.get('customerAddress')
+            customer_name = (data.get('customerName') or '').strip()
+            wo_date = (data.get('woDate') or '').strip()
+            work_order_no = (data.get('workOrderNo') or '').strip()
+            customer_po_no = data.get('customerPoNo') or ''
+            customer_ref_date = data.get('customerRefDate') or ''
+            order_type = data.get('orderType') or ''
+            customer_address = data.get('customerAddress') or ''
 
-            if not all([customer_name, wo_date, work_order_no]):
-                return JsonResponse({'error': 'Missing required fields.'}, status=400)
+            missing = []
+            if not customer_name:
+                missing.append('customer name')
+            if not wo_date:
+                missing.append('WO date')
+            if not work_order_no:
+                missing.append('work order no')
+            if missing:
+                return JsonResponse(
+                    {'error': 'Missing required fields: ' + ', '.join(missing)},
+                    status=400,
+                )
 
             items = data.get('items', [])
+            if not items:
+                return JsonResponse({'error': 'Add at least one item row before saving.'}, status=400)
+
             saved_items = []
             skipped_items = []
 
             for item in items:
-                sr_no = item.get('srNo')
-                id_no = item.get('idNo')
-                inward_no = item.get('inward_no')
-                
-                if sr_no and id_no:
-                    # Check if inward_no exists
-                    existing_work_order = WorkOrder.objects.filter(inward_no=inward_no).first()
+                sr_no = item.get('srNo') or ''
+                id_no = item.get('idNo') or ''
+                inward_no = item.get('inward_no') or ''
+                item_name = item.get('item') or ''
+                hsn = item.get('hsn') or ''
+                range_val = item.get('range') or ''
+                make = item.get('make') or ''
+                channels = item.get('channels') or ''
 
-                    if existing_work_order:
-                        # Update the existing work order
-                        existing_work_order.customer_name = customer_name
-                        existing_work_order.wo_date = wo_date
-                        existing_work_order.work_order_no = work_order_no
-                        existing_work_order.customer_po_no = customer_po_no
-                        existing_work_order.customer_ref_date = customer_ref_date
-                        existing_work_order.order_type = order_type
-                        existing_work_order.customer_address = customer_address
-                        existing_work_order.item = item.get('item')
-                        existing_work_order.hsn = item.get('hsn')
-                        existing_work_order.sr_no = sr_no
-                        existing_work_order.id_no = id_no
-                        existing_work_order.range = item.get('range')
-                        existing_work_order.make = item.get('make')
-                        existing_work_order.channels = item.get('channels')
-                        existing_work_order.save()  # Save the updated object
-                        saved_items.append(existing_work_order.id)  # Optionally collect the IDs of updated records
-                    else:
-                        # If it doesn't exist, create a new work order
-                        work_order = WorkOrder.objects.create(
-                            customer_name=customer_name,
-                            wo_date=wo_date,
-                            work_order_no=work_order_no,
-                            customer_po_no=customer_po_no,
-                            customer_ref_date=customer_ref_date,
-                            order_type=order_type,
-                            customer_address=customer_address,
-                            inward_no=inward_no,
-                            item=item.get('item'),
-                            hsn=item.get('hsn'),
-                            sr_no=sr_no,
-                            id_no=id_no,
-                            range=item.get('range'),
-                            make=item.get('make'),
-                            channels=item.get('channels')
-                        )
-                        saved_items.append(work_order.id)
+                # Require identifying fields for a real line item
+                if not (sr_no and id_no):
+                    skipped_items.append({'srNo': sr_no, 'idNo': id_no, 'reason': 'missing srNo/idNo'})
+                    continue
+                if not inward_no:
+                    return JsonResponse(
+                        {'error': 'Inward No is missing on one or more rows. Create/generate inward numbers first.'},
+                        status=400,
+                    )
+
+                existing_work_order = WorkOrder.objects.filter(inward_no=inward_no).first()
+
+                if existing_work_order:
+                    existing_work_order.customer_name = customer_name
+                    existing_work_order.wo_date = wo_date
+                    existing_work_order.work_order_no = work_order_no
+                    existing_work_order.customer_po_no = customer_po_no
+                    existing_work_order.customer_ref_date = customer_ref_date
+                    existing_work_order.order_type = order_type
+                    existing_work_order.customer_address = customer_address
+                    existing_work_order.item = item_name
+                    existing_work_order.hsn = hsn
+                    existing_work_order.sr_no = sr_no
+                    existing_work_order.id_no = id_no
+                    existing_work_order.range = range_val
+                    existing_work_order.make = make
+                    existing_work_order.channels = channels
+                    existing_work_order.save()
+                    saved_items.append(existing_work_order.id)
+                else:
+                    work_order = WorkOrder.objects.create(
+                        customer_name=customer_name,
+                        wo_date=wo_date,
+                        work_order_no=work_order_no,
+                        customer_po_no=customer_po_no,
+                        customer_ref_date=customer_ref_date,
+                        order_type=order_type,
+                        customer_address=customer_address,
+                        inward_no=inward_no,
+                        item=item_name,
+                        hsn=hsn,
+                        sr_no=sr_no,
+                        id_no=id_no,
+                        range=range_val,
+                        make=make,
+                        channels=channels,
+                    )
+                    saved_items.append(work_order.id)
 
             return JsonResponse({
                 'message': 'Work order processed successfully!',
