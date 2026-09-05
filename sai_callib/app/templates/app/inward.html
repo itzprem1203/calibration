@@ -289,15 +289,16 @@ function addRow(tableId, numColumns) {
     var tableBody = document.querySelector('#' + tableId + ' tbody');
     var newRow = tableBody.insertRow(tableBody.rows.length);
 
-    // Mark the row as new
-    newRow.setAttribute('data-new', 'true');
-
     // Get the work_order_no input value
     var workOrderNo = document.getElementById('work_order_no').value;
 
     // Calculate the new Sr.No based on the work_order_no
     var serialSuffix = String(tableBody.rows.length).padStart(2, '0');  // e.g., "01", "02", etc.
     var serialNumber = workOrderNo + '/' + serialSuffix;  // e.g., "SAI/CAL/24-25/001/01"
+
+    // Mark the row as new and give it a selectable inward id
+    newRow.setAttribute('data-new', 'true');
+    newRow.setAttribute('data-row-id', serialNumber);
 
     // Add click event to highlight the row on click
     newRow.addEventListener('click', function(event) {
@@ -403,73 +404,67 @@ let selectedRowId = null;
 
 // Function to select row and change background color to green
 $(document).on('click', '#tableBody-1 tr', function() {
+    var $row = $(this);
+
     // Remove highlight from previously selected row
     $('#tableBody-1 tr').removeClass('selected-row');
-    
-    // Add highlight (green background) to the clicked row
-    $(this).addClass('selected-row');
-    
-    // Get the row ID from data-row-id attribute
-    selectedRowId = $(this).data('row-id');
-    
-    // Log the selected row ID to the console
-    console.log("Selected Row ID:", selectedRowId);
+    $row.addClass('selected-row');
+
+    // Prefer data-row-id; fall back to first-column inward no text/input
+    selectedRowId = $row.attr('data-row-id') || $row.find('td:first input').val() || $row.find('td:first').text().trim() || null;
+    if (selectedRowId) {
+        $row.attr('data-row-id', selectedRowId);
+    }
 
     // Enable inline editing of cells in the selected row
-    $(this).find('td').each(function(index) {
-        // Check if the cell is not already in edit mode
-        if (!$(this).hasClass('editing')) {
-            // For the Range column (6th cell, index 5)
-            if (index === 5) {
-                const selectRange = document.createElement('select');
-                selectRange.style.width = '100%';
-                selectRange.style.margin = '0px';
-                selectRange.innerHTML = `
-                    <option value="">Select Range</option>
-                    <option value="± 1 mm">± 1 mm</option>
-                    <option value="± 2 mm">± 2 mm</option>
-                    <option value="± 20 um">± 20 um</option>
-                    <option value="± 40 um">± 40 um</option>
-                `;
-                
-                // Set the selected option based on the existing cell value
-                selectRange.value = $(this).text().trim();
-                $(this).html(selectRange);
-            }
-            // For the Channels column (8th cell, index 7)
-            else if (index === 7) {
-                const selectChannels = document.createElement('select');
-                selectChannels.style.width = '100%';
-                selectChannels.style.margin = '0px';
-                selectChannels.innerHTML = `
-                    <option value="">Select Channels</option>
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5</option>
-                    <option value="6">6</option>
-                `;
-                
-                // Set the selected option based on the existing cell value
-                selectChannels.value = $(this).text().trim();
-                $(this).html(selectChannels);
-            } 
-            else if (index === 8) { // Check box column (index 8)
+    $row.find('td').each(function(index) {
+        var $td = $(this);
+        if ($td.hasClass('editing')) {
+            return;
+        }
+
+        if (index === 5) {
+            const current = ($td.find('select').val() || $td.find('input').val() || $td.text()).toString().trim();
+            const selectRange = document.createElement('select');
+            selectRange.style.width = '100%';
+            selectRange.style.margin = '0px';
+            selectRange.innerHTML = `
+                <option value="">Select Range</option>
+                <option value="± 1 mm">± 1 mm</option>
+                <option value="± 2 mm">± 2 mm</option>
+                <option value="± 20 um">± 20 um</option>
+                <option value="± 40 um">± 40 um</option>
+            `;
+            selectRange.value = current;
+            $td.empty().append(selectRange);
+        } else if (index === 7) {
+            const current = ($td.find('select').val() || $td.find('input').val() || $td.text()).toString().trim();
+            const selectChannels = document.createElement('select');
+            selectChannels.style.width = '100%';
+            selectChannels.style.margin = '0px';
+            selectChannels.innerHTML = `
+                <option value="">Select Channels</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+            `;
+            selectChannels.value = current;
+            $td.empty().append(selectChannels);
+        } else if (index === 8) {
             var checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
-            checkbox.disabled = true; // Makes the checkbox read-only
+            checkbox.disabled = true;
             checkbox.style.width = '100%';
             checkbox.style.margin = '0 auto';
-            $(this).empty().append(checkbox);
-        } 
-            // For other cells, including the first column (inward_no)
-            else {
-                const cellValue = $(this).text().trim();
-                $(this).html(`<input type="text" value="${cellValue}" class="edit-cell">`);
-            }
-            $(this).addClass('editing');  // Mark the cell as being edited
+            $td.empty().append(checkbox);
+        } else if ($td.find('input, select').length === 0) {
+            const cellValue = $td.text().trim();
+            $td.html('<input type="text" value="' + cellValue.replace(/"/g, '&quot;') + '" class="edit-cell">');
         }
+        $td.addClass('editing');
     });
 });
 
