@@ -25,6 +25,9 @@ def inward(request):
             customer_ref_date = data.get('customerRefDate') or ''
             order_type = data.get('orderType') or ''
             customer_address = data.get('customerAddress') or ''
+            location = (data.get('location') or '').strip()
+            calibration_date = (data.get('calibrationDate') or '').strip()
+            next_due_date = (data.get('nextDueDate') or '').strip()
 
             missing = []
             if not customer_name:
@@ -83,6 +86,9 @@ def inward(request):
                     existing_work_order.range = range_val
                     existing_work_order.make = make
                     existing_work_order.channels = channels
+                    existing_work_order.location = location
+                    existing_work_order.calibration_date = calibration_date
+                    existing_work_order.next_due_date = next_due_date
                     existing_work_order.save()
                     saved_items.append(existing_work_order.id)
                 else:
@@ -102,6 +108,9 @@ def inward(request):
                         range=range_val,
                         make=make,
                         channels=channels,
+                        location=location,
+                        calibration_date=calibration_date,
+                        next_due_date=next_due_date,
                     )
                     saved_items.append(work_order.id)
 
@@ -154,6 +163,9 @@ def inward(request):
                     'customer_ref_date': work_orders.first().customer_ref_date,
                     'order_type': work_orders.first().order_type,
                     'customer_address': work_orders.first().customer_address,
+                    'location': work_orders.first().location or '',
+                    'calibration_date': work_orders.first().calibration_date or '',
+                    'next_due_date': work_orders.first().next_due_date or '',
                     'items': []
                 }
 

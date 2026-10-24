@@ -209,7 +209,15 @@ th{
     <input type="date" id="customer_ref_date" ><br>
 
     
-    <textarea id="customer_address"></textarea><br>
+    <textarea id="customer_address"></textarea>
+    <div style="display: inline-block; vertical-align: top; margin-left: 140px;">
+        <label for="location" style="width: 180px;">LOCATION :</label>
+        <input type="text" id="location" style="width: 220px;"><br>
+        <label for="calibration_date" style="width: 180px;">CALIBRATION DATE :</label>
+        <input type="date" id="calibration_date" style="width: 220px;"><br>
+        <label for="next_due_date" style="width: 180px;">NEXT DUE DATE :</label>
+        <input type="date" id="next_due_date" style="width: 220px;">
+    </div><br>
 
     <div class="container_box" style="overflow-y: auto;">
     <div id="setting_plug_trace">
@@ -273,6 +281,9 @@ document.getElementById('refresh-btn2').addEventListener('click', function() {
      document.getElementById('wo_date').value = ''; 
     document.getElementById('customer_po_no').value = ''; 
     document.getElementById('customer_ref_date').value = ''; 
+    document.getElementById('location').value = '';
+    document.getElementById('calibration_date').value = '';
+    document.getElementById('next_due_date').value = '';
     // Reset the ORDER TYPE select field to its default (first) option
     document.getElementById('next_calibration').selectedIndex = 0; 
 
@@ -282,6 +293,15 @@ document.getElementById('refresh-btn2').addEventListener('click', function() {
 
 ///////////////////////////////////////////////////////////////////////////
 
+// Same 6-month rule as the Calibration page; the value stays editable.
+document.getElementById('calibration_date').addEventListener('change', function() {
+    const d = new Date(this.value);
+    if (isNaN(d)) return;
+    d.setMonth(d.getMonth() + 6);
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    document.getElementById('next_due_date').value = `${d.getFullYear()}-${mm}-${dd}`;
+});
 
 var rowData = {};
 
@@ -540,6 +560,9 @@ $(document).ready(function() {
         customerRefDate: customerRefDate,
         orderType: orderType,
         customerAddress: customerAddress,
+        location: $('#location').val(),
+        calibrationDate: $('#calibration_date').val(),
+        nextDueDate: $('#next_due_date').val(),
         items: tableRows
     };
 
@@ -690,6 +713,9 @@ $(document).ready(function() {
                         $('#customer_ref_date').val(response.customer_ref_date);
                         $('#next_calibration').val(response.order_type);
                         $('#customer_address').val(response.customer_address);
+                        $('#location').val(response.location || '');
+                        $('#calibration_date').val(response.calibration_date || '');
+                        $('#next_due_date').val(response.next_due_date || '');
                         
                         // If you have a table to populate:
                         const tableBody = $('#tableBody-1');
@@ -736,6 +762,9 @@ $(document).ready(function() {
         $('#customer_po_no').val('');
         $('#customer_ref_date').val('');
         $('#customer_address').val('');
+        $('#location').val('');
+        $('#calibration_date').val('');
+        $('#next_due_date').val('');
         $('#next_calibration').prop('selectedIndex', 0); // Reset the select to the first option
         $('#tableBody-1').empty(); // Clear all table rows
 

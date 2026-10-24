@@ -65,6 +65,9 @@ class WorkOrder(models.Model):
     range = models.CharField(max_length=100, blank=True, null=True)
     make = models.CharField(max_length=100, blank=True, null=True)
     channels = models.CharField(max_length=255)
+    location = models.CharField(max_length=255, blank=True, null=True)
+    calibration_date = models.CharField(max_length=50, blank=True, null=True)
+    next_due_date = models.CharField(max_length=50, blank=True, null=True)
     
 
 

@@ -280,7 +280,7 @@ th{
 
     <div style="display: flex; align-items: center; gap: 10px; margin-top: 20px;">
         <label for="search" style="width: 170px;">SEARCH CUSTOMER:</label>
-        <input list="customers" id="search-input" style="width: 400px;margin-left: 10px;"  onkeyup="fetchWorkOrders()">
+        <input list="customers" id="search-input" style="width: 400px;margin-left: 10px;">
         <datalist id="customers">
             {% for customer in customer_value %}
             <option value="{{ customer.customer_name }}" 
@@ -462,6 +462,7 @@ th{
     <label style="width:250px">
         <input type="radio" name="group2" value="3" id="lvdt_probe_master" onclick="toggleVisibility()"> LVDT PROBE MASTER
     </label>
+    <button type="button" id="regenerate_btn" style="background-color: red; color: white; font-weight: bold; height: 30px; width: 200px; align-self: center;">AUTO FILL READINGS</button>
 </div>
 
 <div class="container">
@@ -686,24 +687,17 @@ $('#wo_items').change(function() {
     // If a valid sr_no is selected
     if (selectedInwardNo) {
         // Uncheck the checkboxes and hide the containers as soon as wo_items changes
-        const plugMasterChecked = document.getElementById('setting_plug_master');
-        const ringMasterChecked = document.getElementById('setting_ring_master');
+        document.getElementById('setting_plug_master').checked = false;
+        document.getElementById('setting_ring_master').checked = false;
+        document.getElementById('lvdt_probe_master').checked = false;
 
-        // Uncheck both checkboxes
-        plugMasterChecked.checked = false;
-        ringMasterChecked.checked = false;
-
-        // Hide both plugMasterContainer and ringMasterContainer
         for (let i = 1; i <= 6; i++) {
-            const plugMasterContainer = document.getElementById(`plugMasterContainer${i}`);
-            const ringMasterContainer = document.getElementById(`ringMasterContainer${i}`);
-
-            plugMasterContainer.style.display = 'none';
-            ringMasterContainer.style.display = 'none';
-
-             // Clear values in both containers
-             clearContainerValues(plugMasterContainer);
-            clearContainerValues(ringMasterContainer);
+            ['plug', 'ring', 'lvdt'].forEach((type) => {
+                const masterContainer = document.getElementById(`${type}MasterContainer${i}`);
+                if (!masterContainer) return;
+                masterContainer.style.display = 'none';
+                clearContainerValues(masterContainer);
+            });
         }
 
         // Now, fetch the details of the selected sr_no from the data already retrieved
@@ -744,6 +738,28 @@ function updateFields(item) {
     $('#date_calib').val(item.customer_ref_date);
     $('#date_of_receipt').val(item.inward_date);
     $('#channels').val(item.channels);
+
+    if (item.location) {
+        $('#location').val(item.location);
+    }
+    if (item.calibration_date) {
+        $('#date').val(item.calibration_date);
+        if (!$('#date_of_issue').val()) {
+            $('#date_of_issue').val(item.calibration_date);
+        }
+        if (!item.next_due_date) {
+            document.getElementById('date').dispatchEvent(new Event('change'));
+        }
+    }
+    if (item.next_due_date) {
+        $('#next_calibration').val(item.next_due_date);
+    }
+    if (!$('#customer_address').val().trim() && item.customer_address) {
+        $('#customer_address').val(item.customer_address);
+    }
+
+    toggleVisibility();
+    autoGenerateReadings();
 }
 
 
@@ -835,7 +851,10 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 // --- Toggle container visibility based on channels ---
-document.getElementById("channels").addEventListener("input", toggleVisibility);
+document.getElementById("channels").addEventListener("input", function () {
+    toggleVisibility();
+    autoGenerateReadings();
+});
 
 function toggleVisibility() {
     const channels = parseInt(document.getElementById("channels").value) || 0;
@@ -884,6 +903,30 @@ document.querySelector(".container").addEventListener("click", function (event) 
 // --- Perform Calculation for Specific Container ---
 let calculatedData = [];
 
+// Label holds "parameter<br>ref size<br>nominal"; innerText cannot be used because it
+// drops the <br> line breaks while the channel container is hidden.
+function labelLines(label) {
+    return label.innerHTML
+        .split(/<br\s*\/?>/i)
+        .map((part) => part.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim());
+}
+
+// Expected size from the master: ref size + SET value (plug/ring), ref size (LVDT)
+function masterValue(type, label) {
+    const lines = labelLines(label);
+    const refSize = parseFloat(lines[1]) || 0;
+    if (type === "lvdt") return refSize;
+    const match = (lines[2] || "").match(/^SET\s*([+-]?\d*\.?\d+)$/);
+    return refSize + (match ? parseFloat(match[1]) : 0);
+}
+
+function selectedMasterType() {
+    if (document.getElementById("setting_plug_master").checked) return "plug";
+    if (document.getElementById("setting_ring_master").checked) return "ring";
+    if (document.getElementById("lvdt_probe_master").checked) return "lvdt";
+    return null;
+}
+
 function calculateValues(type, index) {
     const containerId = `${type}MasterContainer${index}`;
     const container = document.getElementById(containerId);
@@ -898,43 +941,112 @@ function calculateValues(type, index) {
     let hasValidInput = false;
 
     formGroups.forEach((group) => {
-        const label = group.querySelector("label");
-        const lines = label.innerText.trim().split("\n");
-
-        const refSize = parseFloat(lines[1]) || 0;
-        let result = 0;
-
-        if (type === "plug" || type === "ring") {
-            const nominal = lines[2];
-            const regex = /^SET\s*([+-]?\d*\.?\d+)$/;
-            const match = nominal.match(regex);
-            const value = match ? parseFloat(match[1]) : 0;
-            result = refSize + value;
-        } else if (type === "lvdt") {
-            result = refSize;
-        }
-
-        const formattedResult = result.toFixed(4);
+        const result = parseFloat(masterValue(type, group.querySelector("label")).toFixed(4));
         const inputField = group.querySelector('input[type="text"]:not([readonly])');
         const outputField = group.querySelector('input[type="text"][readonly]');
         const userInput = parseFloat(inputField.value) || 0;
 
         if (userInput !== 0) hasValidInput = true;
 
-        const outputValue = hasValidInput ? formattedResult - userInput : null;
+        const outputValue = hasValidInput ? Math.round((result - userInput) * 10000) / 10000 : null;
 
         inputValues.push(userInput.toFixed(4));
         outputValues.push(outputValue !== null ? outputValue.toFixed(4) : "");
         outputField.value = outputValue !== null ? outputValue.toFixed(4) : "";
     });
 
+    // The output page maps entries to channels by position, so keep one entry per
+    // channel of the current master type, in channel order.
+    calculatedData = calculatedData.filter(
+        (d) => d.containerId !== containerId && d.containerId.startsWith(type)
+    );
     if (hasValidInput) {
         calculatedData.push({ containerId, inputValues, outputValues });
-        console.log(`✅ ${containerId}: Inputs = [${inputValues}], Outputs = [${outputValues}]`);
-    } else {
-        console.log(`⚠️ No valid input in ${containerId}`);
+    }
+    calculatedData.sort(
+        (a, b) => parseInt(a.containerId.replace(/\D/g, ""), 10) - parseInt(b.containerId.replace(/\D/g, ""), 10)
+    );
+}
+
+// --- Auto-generate observations within ±1 µm of the master value ---
+const MAX_ERROR_MM = 0.001;
+
+function errorSteps() {
+    const lc = parseFloat(document.getElementById("least_count").value) || 0.001;
+    const n = Math.max(1, Math.round(MAX_ERROR_MM / lc));
+    const steps = [];
+    for (let k = -n; k <= n; k++) steps.push(Math.round(k * lc * 10000) / 10000);
+    return steps;
+}
+
+function autoGenerateReadings() {
+    const type = selectedMasterType();
+    const channels = Math.min(parseInt(document.getElementById("channels").value, 10) || 0, 6);
+    if (!type || channels < 1) return;
+
+    const steps = errorSteps();
+    const usedPatterns = new Set();
+    let previousErrors = [];
+
+    for (let i = 1; i <= channels; i++) {
+        const container = document.getElementById(`${type}MasterContainer${i}`);
+        if (!container) continue;
+        const groups = Array.from(container.querySelectorAll(".form-group"));
+        if (!groups.length) continue;
+
+        // Every row differs from the same row of the previous channel,
+        // and no two channels get the same set of errors
+        let errors;
+        let pattern;
+        let tries = 0;
+        do {
+            errors = groups.map((_, row) => {
+                const choices = steps.filter((s) => s !== previousErrors[row]);
+                return choices[Math.floor(Math.random() * choices.length)];
+            });
+            pattern = errors.join("|");
+            tries++;
+        } while (usedPatterns.has(pattern) && tries < 100);
+        usedPatterns.add(pattern);
+        previousErrors = errors;
+
+        groups.forEach((group, row) => {
+            const expected = parseFloat(masterValue(type, group.querySelector("label")).toFixed(4));
+            const input = group.querySelector('input[type="text"]:not([readonly])');
+            input.value = (Math.round((expected - errors[row]) * 10000) / 10000).toFixed(4);
+        });
+        calculateValues(type, i);
     }
 }
+
+const traceForMaster = {
+    setting_plug_master: "setting_plug_trace",
+    setting_ring_master: "setting_ring_trace",
+    lvdt_probe_master: "lvdt_probe_trace",
+};
+
+document.querySelectorAll('input[name="group2"]').forEach((radio) => {
+    radio.addEventListener("change", function () {
+        const trace = document.getElementById(traceForMaster[this.id]);
+        if (trace) trace.checked = true;
+        calculatedData = [];
+        toggleVisibility();
+        autoGenerateReadings();
+    });
+});
+
+document.getElementById("least_count").addEventListener("change", autoGenerateReadings);
+document.getElementById("regenerate_btn").addEventListener("click", function () {
+    if (!selectedMasterType()) {
+        alert("Select Setting Plug / Setting Ring / LVDT Probe master first.");
+        return;
+    }
+    if (!(parseInt(document.getElementById("channels").value, 10) > 0)) {
+        alert("Enter the number of channels first.");
+        return;
+    }
+    autoGenerateReadings();
+});
 
 
 
@@ -1140,6 +1252,7 @@ document.getElementById('search-input').addEventListener('input', function() {
             break;
         }
     }
+    fetchWorkOrders();
 });
 
 
@@ -1182,8 +1295,27 @@ document.getElementById("final_button").addEventListener("click", function(event
     
 
     // Collect radio button selections from both groups
-    var group1Selection = document.querySelector('input[name="group1"]:checked').id;
-    var group2Selection = document.querySelector('input[name="group2"]:checked').id;
+    var group1Checked = document.querySelector('input[name="group1"]:checked');
+    var group2Checked = document.querySelector('input[name="group2"]:checked');
+    if (!group1Checked || !group2Checked) {
+        alert("Select the reference standard (traceability) and the calibration master before saving.");
+        return;
+    }
+    var group1Selection = group1Checked.id;
+    var group2Selection = group2Checked.id;
+
+    var masterType = selectedMasterType();
+    var channelCount = Math.min(parseInt(channels, 10) || 0, 6);
+    var orderedData = [];
+    for (var ch = 1; ch <= channelCount; ch++) {
+        calculateValues(masterType, ch);
+        var entryId = masterType + "MasterContainer" + ch;
+        orderedData.push(
+            calculatedData.find(function (d) { return d.containerId === entryId; }) ||
+            { containerId: entryId, inputValues: [], outputValues: [] }
+        );
+    }
+    calculatedData = orderedData;
 
     
 

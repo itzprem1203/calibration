@@ -2,6 +2,7 @@
 {% load static %} 
 <html lang="en">
 <head>
+    <link rel="icon" href="data:,">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
@@ -12,6 +13,8 @@
     /* Calibrated for physical print so measured top gap is ~60mm */
     --header-space: 67mm;
     --footer-space: -2mm;
+    /* Printers cannot print the outer ~5mm of the paper; keep all content inside this gap */
+    --side-gap: 8mm;
 }
 
 #a4-content,#a4-content1 {
@@ -47,7 +50,7 @@ body {
 	/* Page background handled by absolutely positioned image for reliable printing */
 	background-color: white;
 	border: none; /* side borders are drawn only from data-start area */
-	padding: 0 8px 24mm 8px; /* keep central data area usable */
+	padding: 0 var(--side-gap) 24mm var(--side-gap);
 	box-shadow: none; /* Avoid additional shadow in the exported PDF */
     margin-top: 20px; /* Top margin for spacing */
     position: relative; /* Set position relative for absolute children */
@@ -68,10 +71,18 @@ body {
     display: block !important;
 }
 .a4-sheet::before {
-    left: 0;
+    left: var(--side-gap);
 }
 .a4-sheet::after {
-    right: 0;
+    right: var(--side-gap);
+}
+
+/* PDF export: no screen spacing, and stay just under one A4 page so html2pdf
+   never spills a 1px sliver onto an extra blank page */
+body.pdf-export .a4-sheet {
+    margin: 0 !important;
+    height: 296mm !important;
+    overflow: hidden;
 }
 
 /* Pre-printed letterhead space in blank sheet */
@@ -178,6 +189,11 @@ body {
             height: 1px; /* Line thickness */
             background-color: #000; /* Line color */
         }
+        #line1, #line2, #line3, #line4 {
+            left: var(--side-gap);
+            right: var(--side-gap);
+            width: auto;
+        }
 
         #line5 {
             display: none; /* replaced with section borders for stable alignment */
@@ -264,9 +280,9 @@ border-bottom: 1px solid #000;
 
         .container-2{
             height: 120px;
-            width: 380px;
+            width: calc(100% - 92mm);
             margin-top: -130px;
-            margin-left: 380px;
+            margin-left: 92mm;
             
         }
         
@@ -313,6 +329,10 @@ label::after {
             width: 90mm;
             margin-top: 30px;
         }
+        .container-3 > header,
+        .container-6 > header {
+            padding-left: 4px;
+        }
         .container3_subheader3{
             font-size: 10px; /* Font size for the subheader */
             font-style: oblique;
@@ -333,9 +353,9 @@ label::after {
         }
         .container-4{
             height: 155px;
-            width: 380px;
+            width: calc(100% - 92mm);
             margin-top: -130px;
-            margin-left: 380px;
+            margin-left: 92mm;
             background-color: red;
             
         }
@@ -385,8 +405,8 @@ label::after {
             margin-top: 0;
             border-top: 1px solid #000;
             position: absolute;
-            left: 6px;
-            right: 6px;
+            left: var(--side-gap);
+            right: var(--side-gap);
             bottom: var(--footer-space); /* fixed 12mm from page bottom */
             z-index: 2;
         }
@@ -397,8 +417,8 @@ label::after {
             margin-top: 0;
             border-top: 1px solid #000;
             position: absolute;
-            left: 6px;
-            right: 6px;
+            left: var(--side-gap);
+            right: var(--side-gap);
             bottom: var(--footer-space); /* fixed 12mm from page bottom */
             z-index: 2;
         }
@@ -410,7 +430,8 @@ label::after {
             
         }
         .container8_sub2{
-            margin-left: 74%;
+            margin-left: auto;
+            margin-right: 10px;
             margin-top: -26px;
             height: 26px;
             width: 200px;
@@ -1298,17 +1319,16 @@ console.log(tableData);
                 margin: 0,
                 filename: `${certificateNo}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
-                jsPDF: { unit: 'mm', orientation: 'portrait' }
+                html2canvas: { scale: 2, scrollX: 0, scrollY: 0 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            if (element1 && element2) {
-                const combinedContainer = document.createElement('div');
-                combinedContainer.appendChild(element1.cloneNode(true));
-                combinedContainer.appendChild(element2.cloneNode(true));
-                savePdfToDatedFolder(combinedContainer, opt, certificateNo);
-            } else if (element1) {
-                savePdfToDatedFolder(element1, opt, certificateNo);
+            applyPrintPageState();
+            const pages = [element1, element2].filter(
+                (el) => el && getComputedStyle(el).display !== 'none'
+            );
+            if (pages.length) {
+                savePdfToDatedFolder(pages, opt, certificateNo);
             } else {
                 showNotification('No content found for PDF generation', false);
             }
@@ -1319,10 +1339,24 @@ console.log(tableData);
     .catch(error => console.error("Error:", error));
 }
 
-async function savePdfToDatedFolder(sourceElement, opt, certificateNo) {
-    // Always use browser default download behavior (typically Downloads folder).
-    html2pdf().from(sourceElement).set(opt).save();
-    showNotification("PDF downloaded to your browser default location.", true);
+async function savePdfToDatedFolder(pages, opt, certificateNo) {
+    // Each sheet is rendered on its own, so the PDF has exactly one page per sheet.
+    document.body.classList.add('pdf-export');
+    try {
+        let worker = html2pdf().set(opt).from(pages[0]).toPdf();
+        pages.slice(1).forEach((page) => {
+            worker = worker.get('pdf').then((pdf) => {
+                pdf.addPage();
+            }).from(page).toContainer().toCanvas().toPdf();
+        });
+        await worker.save();
+        showNotification("PDF downloaded to your browser default location.", true);
+    } catch (err) {
+        console.error('PDF generation failed:', err);
+        showNotification('PDF generation failed: ' + err, false);
+    } finally {
+        document.body.classList.remove('pdf-export');
+    }
 }
 
 /* Direct print with correct settings - global scope for button onclick */

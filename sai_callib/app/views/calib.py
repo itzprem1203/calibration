@@ -63,8 +63,10 @@ def calib(request):
                     'inward_no':work_order.inward_no,
                     'inward_date':work_order.wo_date,
                     'channels':work_order.channels,
-                    
-
+                    'customer_address': work_order.customer_address or '',
+                    'location': work_order.location or '',
+                    'calibration_date': work_order.calibration_date or '',
+                    'next_due_date': work_order.next_due_date or '',
                 }
                 print("item_data",item_data)
 
