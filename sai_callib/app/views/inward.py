@@ -25,9 +25,6 @@ def inward(request):
             customer_ref_date = data.get('customerRefDate') or ''
             order_type = data.get('orderType') or ''
             customer_address = data.get('customerAddress') or ''
-            location = (data.get('location') or '').strip()
-            calibration_date = (data.get('calibrationDate') or '').strip()
-            next_due_date = (data.get('nextDueDate') or '').strip()
 
             missing = []
             if not customer_name:
@@ -58,6 +55,9 @@ def inward(request):
                 range_val = item.get('range') or ''
                 make = item.get('make') or ''
                 channels = item.get('channels') or ''
+                location = (item.get('location') or '').strip()
+                calibration_date = (item.get('calibrationDate') or '').strip()
+                next_due_date = (item.get('nextDueDate') or '').strip()
 
                 # Require identifying fields for a real line item
                 if not (sr_no and id_no):
@@ -163,9 +163,6 @@ def inward(request):
                     'customer_ref_date': work_orders.first().customer_ref_date,
                     'order_type': work_orders.first().order_type,
                     'customer_address': work_orders.first().customer_address,
-                    'location': work_orders.first().location or '',
-                    'calibration_date': work_orders.first().calibration_date or '',
-                    'next_due_date': work_orders.first().next_due_date or '',
                     'items': []
                 }
 
@@ -181,6 +178,9 @@ def inward(request):
                         'range': work_order.range,
                         'make': work_order.make,
                         'channels': work_order.channels,
+                        'location': work_order.location or '',
+                        'calibration_date': work_order.calibration_date or '',
+                        'next_due_date': work_order.next_due_date or '',
                         'is_in_main_calibration': is_in_main_calibration
                     })
 

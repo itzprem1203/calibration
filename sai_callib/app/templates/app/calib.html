@@ -744,9 +744,7 @@ function updateFields(item) {
     }
     if (item.calibration_date) {
         $('#date').val(item.calibration_date);
-        if (!$('#date_of_issue').val()) {
-            $('#date_of_issue').val(item.calibration_date);
-        }
+        $('#date_of_issue').val(item.calibration_date);
         if (!item.next_due_date) {
             document.getElementById('date').dispatchEvent(new Event('change'));
         }

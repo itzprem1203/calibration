@@ -209,15 +209,7 @@ th{
     <input type="date" id="customer_ref_date" ><br>
 
     
-    <textarea id="customer_address"></textarea>
-    <div style="display: inline-block; vertical-align: top; margin-left: 140px;">
-        <label for="location" style="width: 180px;">LOCATION :</label>
-        <input type="text" id="location" style="width: 220px;"><br>
-        <label for="calibration_date" style="width: 180px;">CALIBRATION DATE :</label>
-        <input type="date" id="calibration_date" style="width: 220px;"><br>
-        <label for="next_due_date" style="width: 180px;">NEXT DUE DATE :</label>
-        <input type="date" id="next_due_date" style="width: 220px;">
-    </div><br>
+    <textarea id="customer_address"></textarea><br>
 
     <div class="container_box" style="overflow-y: auto;">
     <div id="setting_plug_trace">
@@ -232,6 +224,9 @@ th{
                     <th style="width: 10%;">Range</th>
                     <th>Make</th>
                     <th style="width: 5%;">Channels</th>
+                    <th style="width: 10%;">Location</th>
+                    <th style="width: 9%;">Calibration Date</th>
+                    <th style="width: 9%;">Next Due Date</th>
                     <th style="width: 5%;">Check box</th>
                 </tr>
             </thead>
@@ -241,7 +236,7 @@ th{
             
         </table>
         <br>
-        <button  id="add_new_btn" onclick="addRow('setting_plug_trace', 9)">Add New</button>
+        <button  id="add_new_btn" onclick="addRow('setting_plug_trace', 12)">Add New</button>
         <div id="control_btn_div"> 
             <a href="/index/">
                 <button type="button" id="cancel-btn">BACK</button>
@@ -281,9 +276,6 @@ document.getElementById('refresh-btn2').addEventListener('click', function() {
      document.getElementById('wo_date').value = ''; 
     document.getElementById('customer_po_no').value = ''; 
     document.getElementById('customer_ref_date').value = ''; 
-    document.getElementById('location').value = '';
-    document.getElementById('calibration_date').value = '';
-    document.getElementById('next_due_date').value = '';
     // Reset the ORDER TYPE select field to its default (first) option
     document.getElementById('next_calibration').selectedIndex = 0; 
 
@@ -293,14 +285,29 @@ document.getElementById('refresh-btn2').addEventListener('click', function() {
 
 ///////////////////////////////////////////////////////////////////////////
 
-// Same 6-month rule as the Calibration page; the value stays editable.
-document.getElementById('calibration_date').addEventListener('change', function() {
+// Item table columns (0-based)
+const COL_LOCATION = 8, COL_CALIB_DATE = 9, COL_NEXT_DUE = 10, COL_CHECKBOX = 11;
+
+function makeCellInput(type, value) {
+    var input = document.createElement('input');
+    input.type = type;
+    input.value = value || '';
+    input.style.width = '100%';
+    input.style.marginLeft = '0';
+    input.style.padding = '0';
+    input.style.border = 'none';
+    input.style.outline = 'none';
+    return input;
+}
+
+// Same 6-month rule as the Calibration page; the next due date stays editable.
+$(document).on('change', '#tableBody-1 td:nth-child(' + (COL_CALIB_DATE + 1) + ') input', function() {
     const d = new Date(this.value);
     if (isNaN(d)) return;
     d.setMonth(d.getMonth() + 6);
     const mm = String(d.getMonth() + 1).padStart(2, '0');
     const dd = String(d.getDate()).padStart(2, '0');
-    document.getElementById('next_due_date').value = `${d.getFullYear()}-${mm}-${dd}`;
+    $(this).closest('tr').find('td:nth-child(' + (COL_NEXT_DUE + 1) + ') input').val(`${d.getFullYear()}-${mm}-${dd}`);
 });
 
 var rowData = {};
@@ -362,7 +369,9 @@ function addRow(tableId, numColumns) {
                 <option value="6">6</option>
             `;
             cell.appendChild(selectChannels);
-        }else if (i === 8) { // Check box column (index 8)
+        } else if (i === COL_CALIB_DATE || i === COL_NEXT_DUE) {
+            cell.appendChild(makeCellInput('date'));
+        } else if (i === COL_CHECKBOX) {
             var checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
             checkbox.disabled = true; // Makes the checkbox read-only
@@ -473,9 +482,16 @@ $(document).on('click', '#tableBody-1 tr', function() {
             `;
             selectChannels.value = current;
             $td.empty().append(selectChannels);
-        } else if (index === 8) {
+        } else if (index === COL_CALIB_DATE || index === COL_NEXT_DUE) {
+            if ($td.find('input').length === 0) {
+                const dateValue = $td.text().trim();
+                $td.empty().append(makeCellInput('date', dateValue));
+            }
+        } else if (index === COL_CHECKBOX) {
+            var wasChecked = $td.find('input[type="checkbox"]').prop('checked') || false;
             var checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
+            checkbox.checked = wasChecked;
             checkbox.disabled = true;
             checkbox.style.width = '100%';
             checkbox.style.margin = '0 auto';
@@ -514,7 +530,10 @@ function collectData() {
             idNo: cellVal(5),
             range: cellVal(6, 'select'),
             make: cellVal(7),
-            channels: cellVal(8, 'select')
+            channels: cellVal(8, 'select'),
+            location: cellVal(COL_LOCATION + 1),
+            calibrationDate: cellVal(COL_CALIB_DATE + 1),
+            nextDueDate: cellVal(COL_NEXT_DUE + 1)
         };
         
         // Only push rows with a valid inward_no or item value to avoid empty entries
@@ -560,9 +579,6 @@ $(document).ready(function() {
         customerRefDate: customerRefDate,
         orderType: orderType,
         customerAddress: customerAddress,
-        location: $('#location').val(),
-        calibrationDate: $('#calibration_date').val(),
-        nextDueDate: $('#next_due_date').val(),
         items: tableRows
     };
 
@@ -713,9 +729,6 @@ $(document).ready(function() {
                         $('#customer_ref_date').val(response.customer_ref_date);
                         $('#next_calibration').val(response.order_type);
                         $('#customer_address').val(response.customer_address);
-                        $('#location').val(response.location || '');
-                        $('#calibration_date').val(response.calibration_date || '');
-                        $('#next_due_date').val(response.next_due_date || '');
                         
                         // If you have a table to populate:
                         const tableBody = $('#tableBody-1');
@@ -734,6 +747,9 @@ $(document).ready(function() {
                                     <td>${item.range}</td>
                                     <td>${item.make}</td>
                                     <td>${item.channels}</td>
+                                    <td>${item.location || ''}</td>
+                                    <td>${item.calibration_date || ''}</td>
+                                    <td>${item.next_due_date || ''}</td>
                                     <td><input type="checkbox" class="custom-checkbox readonly-checkbox" ${checkboxChecked}></td>
                                 </tr>`;
                                 tableBody.append(row);
@@ -762,9 +778,6 @@ $(document).ready(function() {
         $('#customer_po_no').val('');
         $('#customer_ref_date').val('');
         $('#customer_address').val('');
-        $('#location').val('');
-        $('#calibration_date').val('');
-        $('#next_due_date').val('');
         $('#next_calibration').prop('selectedIndex', 0); // Reset the select to the first option
         $('#tableBody-1').empty(); // Clear all table rows
 
