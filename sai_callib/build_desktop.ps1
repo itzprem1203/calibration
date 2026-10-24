@@ -16,11 +16,17 @@ Remove-Item Env:DATABASE_URL -ErrorAction SilentlyContinue
 Remove-Item Env:DEBUG -ErrorAction SilentlyContinue
 $env:DJANGO_SETTINGS_MODULE = "sai_calibrations.settings"
 
+if (Select-String -Path licensing.py -Pattern "^PUBLIC_KEY = ''" -Quiet) {
+    throw "No licence key set up yet. Run once: $Python license_tool.py init"
+}
+
 Write-Host "Collecting static files..."
 & $Python manage.py collectstatic --noinput --clear | Out-Null
 if ($LASTEXITCODE -ne 0) { throw "collectstatic failed" }
 
 Write-Host "Building exe..."
+# PyInstaller logs progress on stderr; rely on its exit code instead
+$ErrorActionPreference = "Continue"
 & $Python -m PyInstaller --noconfirm --clean --onefile --windowed `
     --name SAI_Calibration `
     --icon app/static/images/sai.ico `
@@ -32,6 +38,7 @@ Write-Host "Building exe..."
     --exclude-module tkinter `
     desktop_app.py
 if ($LASTEXITCODE -ne 0) { throw "PyInstaller failed" }
+$ErrorActionPreference = "Stop"
 
 $exe = Get-Item dist\SAI_Calibration.exe
 Write-Host ("Done: {0} ({1:N0} MB)" -f $exe.FullName, ($exe.Length / 1MB))
