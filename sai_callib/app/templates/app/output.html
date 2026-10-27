@@ -1269,7 +1269,9 @@ console.log(tableData);
         const container = document.getElementById(`container-7-${i}`);
         
         if (container && container.style.display !== 'none') {
-            const tbodyId = group2SelectionId === "setting_ring_master" ? `tableBody-4-${i}` : `tableBody-3-${i}`;
+            const isProbe = group2SelectionId === "lvdt_probe_master";
+            const tbodyId = group2SelectionId === "setting_ring_master" ? `tableBody-4-${i}`
+                : isProbe ? `tableBody-5-${i}` : `tableBody-3-${i}`;
             const tbody = document.getElementById(tbodyId);
 
             if (tbody) {
@@ -1277,7 +1279,14 @@ console.log(tableData);
                 const rows = Array.from(tbody.getElementsByTagName("tr"));
 
                 rows.forEach((row) => {
-                    const dataRow = {
+                    // The probe table has no Nominal column
+                    const dataRow = isProbe ? {
+                        parameter: row.cells[1].querySelector('input')?.value || '',
+                        ref_size: row.cells[2].querySelector('input')?.value || '',
+                        nominal: '',
+                        observation_size: row.cells[3].innerText || '',
+                        error: row.cells[4].innerText || '',
+                    } : {
                         parameter: row.cells[1].querySelector('input')?.value || '',
                         ref_size: row.cells[2].querySelector('input')?.value || '',
                         nominal: row.cells[3].querySelector('input')?.value || '',
