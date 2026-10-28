@@ -10,9 +10,12 @@
     <title>A4 Sheet</title>
     <style>
 :root {
-    /* Calibrated for physical print so measured top gap is ~60mm */
-    --header-space: 67mm;
-    --footer-space: -2mm;
+    /* Data starts just below the letterhead title */
+    --header-space: 62mm;
+    --lh-teal: #3f8a93;
+    --lh-header-height: 46mm;
+    --lh-footer-height: 10.5mm;
+    --footer-space: var(--lh-footer-height);
     /* Printers cannot print the outer ~5mm of the paper; keep all content inside this gap */
     --side-gap: 8mm;
 }
@@ -85,9 +88,103 @@ body.pdf-export .a4-sheet {
     overflow: hidden;
 }
 
-/* Pre-printed letterhead space in blank sheet */
+/* Space taken by the letterhead header and title */
 .preprinted-header-space {
     height: var(--header-space);
+}
+
+/* Company letterhead (replaces the old pre-printed paper) */
+.letterhead {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+.lh-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--lh-header-height);
+    background-color: var(--lh-teal);
+    color: #fff;
+    text-align: center;
+    z-index: 4;
+}
+.lh-logo {
+    position: absolute;
+    top: 4.5mm;
+    left: 50%;
+    width: 14mm;
+    height: 15.4mm;
+    margin-left: -7mm;
+    border: 0.4mm solid #fff;
+    box-sizing: border-box;
+}
+.lh-name {
+    position: absolute;
+    top: 23.5mm;
+    left: 0;
+    right: 0;
+    font-family: 'Palatino Linotype', 'Book Antiqua', Georgia, serif;
+    font-size: 28px;
+    line-height: 1;
+    letter-spacing: 0.2px;
+}
+.lh-address {
+    position: absolute;
+    top: 33mm;
+    left: 0;
+    right: 0;
+    font-family: 'Century Gothic', 'Trebuchet MS', Arial, sans-serif;
+    font-size: 12px;
+    line-height: 20px;
+}
+.lh-title {
+    position: absolute;
+    top: calc(var(--lh-header-height) + 3.5mm);
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-family: 'Century Gothic', 'Trebuchet MS', Arial, sans-serif;
+    font-size: 17px;
+    font-weight: bold;
+    line-height: 1;
+    color: #555;
+    z-index: 4;
+}
+.lh-title span {
+    color: var(--lh-teal);
+}
+.lh-watermark {
+    position: absolute;
+    top: 120mm;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-family: 'Palatino Linotype', 'Book Antiqua', Georgia, serif;
+    font-size: 420px;
+    line-height: 1;
+    color: var(--lh-teal);
+    opacity: 0.05;
+    pointer-events: none;
+    z-index: 1;
+}
+.lh-footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: var(--lh-footer-height);
+    line-height: var(--lh-footer-height);
+    background-color: var(--lh-teal);
+    color: #fff;
+    text-align: center;
+    font-family: 'Century Gothic', 'Trebuchet MS', Arial, sans-serif;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 4;
+}
+.lh-footer span {
+    color: #a9dde2;
 }
 
 /* No page-spanning background; keep original layout/alignment */
@@ -538,6 +635,7 @@ th, td {
     <div class="a4-container">
         
 		<div class="a4-sheet" id="a4-content">
+        {% include 'app/letterhead.html' %}
         <div class="preprinted-header-space"></div>
 
         <div class="line" id="line1"></div> 
@@ -761,7 +859,7 @@ th, td {
 
 
 <div class="line" id="line7"></div>
-            <header style="text-align: center;font-size: small; margin-top: 18px;">..... END OF CERTIFICATE .....</header>
+            <header style="text-align: center;font-size: small; margin-top: 12px;">..... END OF CERTIFICATE .....</header>
             <div class="container8_sub1">
                 <input type="text" class="calibration_engineer_op" style="width: 150px; margin-left: 25px;">
                 <p style="text-align: center; margin-top: 5px;">Calibration Engineer</p>
@@ -771,7 +869,7 @@ th, td {
                 <p style="text-align: center; margin-top: 5px;">Quality Manager</p>
             </div>
             <p class="page-no">1</p>
-            <footer style="height: 50px;">
+            <footer style="height: 24px;">
                 <div class="scale-footer"></div>
                 <!-- The footer content will be generated dynamically -->
             </footer>
@@ -783,6 +881,7 @@ th, td {
 
 
 	<div class="a4-sheet" id="a4-content1">
+        {% include 'app/letterhead.html' %}
         <div class="preprinted-header-space"></div>
         <div class="container-7" style="margin-top: -10px;" id="container-7-2">
             <header style="text-align: center;font-weight: bold; margin-top: 0px;">CALIBRATION RESULT-2</header>
@@ -1138,7 +1237,7 @@ th, td {
 
 <div class="line" id="line7"></div>
    
-            <header style="text-align: center;font-size: small;margin-top: 16px;">..... END OF CERTIFICATE .....</header>
+            <header style="text-align: center;font-size: small;margin-top: 10px;">..... END OF CERTIFICATE .....</header>
             <div class="container8_sub1">
                 <input type="text" class="calibration_engineer_op" style="width: 150px; margin-left: 25px;">
                 <p style="text-align: center; margin-top: 5px;">Calibration Engineer</p>
@@ -1148,7 +1247,7 @@ th, td {
                 <p style="text-align: center; margin-top: 5px;">Quality Manager</p>
             </div>
             <p class="page-no">2</p>
-            <footer style="height: 50px;">
+            <footer style="height: 24px;">
                 <div class="scale-footer"></div>
                 <!-- The footer content will be generated dynamically -->
             </footer>
